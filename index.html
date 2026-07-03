@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sailr · Your crew, always on watch</title>
+<meta name="description" content="Sailr listens on your Mac. The moment a task is said out loud, a Claude-powered crew is already on it. Reads run themselves. Sends wait for your nod.">
+<link rel="icon" href="assets/app/icon.png">
+
+<style>
+/* ============================================================
+   SAILR MARKETING SITE
+   Brand law: navy #082850 / blue #0061FF / sky #EAF2FB / green #00B368
+   (text green #0A7A47) / slate #5A7184 / border #DAE4EF / gold #FFC400 /
+   red #E4002B. True pixel art for chrome + scenes. Wordmark stays smooth.
+   ============================================================ */
+:root{
+  --navy:#082850; --blue:#0061FF; --sky:#EAF2FB; --green:#00B368; --green-ink:#0A7A47;
+  --slate:#5A7184; --border:#DAE4EF; --gold:#FFC400; --red:#E4002B;
+  --hull-dark:#041838; --water-dark:#1f4fc0; --water-mid:#3f74e8; --sun-glow:#FFE08A;
+  --sail-white:#f4f8ff; --sail-shade:#d7e4fb; --rig:#3a567f;
+  --parchment:#F3E6C4; --parchment-line:#D9C593; --ink:#14346B; --label-ink:#6E5520;
+  --px:3px;
+  --maxw:1080px;
+}
+
+@font-face{ font-family:'Outfit'; font-weight:400; font-style:normal; font-display:swap;
+  src:url('assets/fonts/Outfit-Regular.ttf') format('truetype'); }
+@font-face{ font-family:'Outfit'; font-weight:500; font-style:normal; font-display:swap;
+  src:url('assets/fonts/Outfit-Medium.ttf') format('truetype'); }
+@font-face{ font-family:'Outfit'; font-weight:600; font-style:normal; font-display:swap;
+  src:url('assets/fonts/Outfit-SemiBold.ttf') format('truetype'); }
+@font-face{ font-family:'Outfit'; font-weight:700; font-style:normal; font-display:swap;
+  src:url('assets/fonts/Outfit-Bold.ttf') format('truetype'); }
+
+*{ box-sizing:border-box; }
+html{ scroll-behavior:auto; }
+html,body{ margin:0; padding:0; }
+body{
+  background:
+    repeating-conic-gradient(var(--sky) 0% 25%, #e1ecfa 0% 50%) 0 0/6px 6px,
+    linear-gradient(180deg,#dfeafa 0%, var(--sky) 60%);
+  background-attachment:fixed;
+  font-family:'Outfit', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color:var(--navy);
+  overflow-x:hidden;
+}
+img{ max-width:100%; }
+a{ color:inherit; }
+h1,h2,h3,p,ul{ margin:0; }
+section[id]{ scroll-margin-top:76px; }
+canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:crisp-edges; }
+
+/* ---------- layout rhythm ---------- */
+.content{ max-width:var(--maxw); margin:0 auto; padding:0 24px; }
+.section{ max-width:var(--maxw); margin:clamp(64px,10vh,128px) auto 0; padding:0 24px; }
+.section:last-of-type{ padding-bottom:8px; }
+.section h2{
+  font-family:'Outfit'; font-weight:700; color:var(--navy);
+  font-size:clamp(30px,4vw,44px); text-align:center; line-height:1.1; margin:0 0 18px;
+}
+.eyebrow{ text-align:center; }
+
+/* ---------- reveal-on-scroll ---------- */
+.reveal{ opacity:0; transform:translateY(14px); transition:opacity .32s cubic-bezier(.16,1,.3,1), transform .32s cubic-bezier(.16,1,.3,1); }
+.reveal.in-view{ opacity:1; transform:translateY(0); }
+@media (prefers-reduced-motion: reduce){
+  .reveal{ transition:none !important; opacity:1 !important; transform:none !important; }
+}
+
+/* visually-hidden but present in the DOM: keeps typed/animated text
+   readable by screen readers and find-in-page at all times */
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* ---------- pixel chrome: panel ---------- */
+.panel{
+  background:#fff; border:var(--px) solid var(--navy);
+  box-shadow:
+    0 0 0 var(--px) #fff,
+    0 0 0 calc(var(--px)*2) var(--border),
+    0 var(--px) 0 calc(var(--px)*2) var(--navy),
+    6px 12px 0 0 rgba(8,40,80,.16);
+}
+
+/* ---------- pixel chrome: buttons ---------- */
+.btn-sail{
+  appearance:none; cursor:pointer; text-decoration:none; border:none;
+  font-family:'Outfit',sans-serif; font-weight:700; font-size:14px; letter-spacing:.06em;
+  color:var(--navy); background:#fff;
+  padding:13px 20px;
+  border:var(--px) solid var(--navy);
+  box-shadow:0 var(--px) 0 0 var(--navy), 0 calc(var(--px)*2) 0 0 var(--border);
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  text-transform:uppercase; white-space:nowrap;
+  transition:transform .05s steps(1), background .1s;
+}
+.btn-sail:hover{ background:var(--sky); }
+.btn-sail:active{ transform:translateY(var(--px)); box-shadow:0 0 0 0 var(--navy); }
+.btn-sail.blue{ background:var(--blue); color:#fff; box-shadow:0 var(--px) 0 0 var(--navy), 0 calc(var(--px)*2) 0 0 #0047c2; }
+.btn-sail.blue:hover{ background:#1f74ff; }
+.btn-sail.small{ padding:9px 14px; font-size:12px; }
+.btn-sail .mini-sail{ width:15px; height:15px; flex:none; }
+
+/* ---------- pixel chrome: chips + tags ---------- */
+.chip{
+  display:inline-flex; align-items:center; gap:6px; font-family:'Outfit',sans-serif;
+  font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  background:#fff; border:var(--px) solid var(--navy); padding:5px 10px; color:var(--navy);
+}
+.chip.slate{ color:var(--slate); border-color:var(--slate); }
+.chip.blue{ color:var(--blue); border-color:var(--blue); }
+
+.acard{ border:var(--px) solid var(--navy); background:#fff; box-shadow:0 var(--px) 0 0 var(--border); }
+.acard-top{ display:flex; align-items:center; gap:8px; padding:9px 11px; border-bottom:var(--px) solid var(--border); font-size:12.5px; font-weight:800; }
+.acard-top .ico{ width:17px; height:17px; flex:none; }
+.acard-top .tag{ margin-left:auto; font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:3px 7px; border:var(--px) solid var(--border); white-space:nowrap; }
+.tag.read{ color:var(--green-ink); border-color:var(--green-ink); }
+.tag.send{ color:var(--blue); border-color:var(--blue); }
+.tag.sent{ color:var(--green-ink); border-color:var(--green-ink); }
+.acard-body{ padding:9px 11px; font-size:13px; color:var(--navy); line-height:1.5; }
+.dm{ margin:9px 11px; background:var(--sky); border:var(--px) solid var(--border); padding:9px 10px; font-size:12.5px; line-height:1.5; color:var(--navy); }
+.confirm-row{ padding:0 11px 11px; position:relative; }
+.pbtn{ appearance:none; border:none; cursor:default; font-family:'Outfit',sans-serif; font-weight:800; font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:9px 16px; display:inline-flex; align-items:center; gap:6px; transition:background .15s; }
+.pbtn.send{ background:var(--blue); color:#fff; border:var(--px) solid var(--navy); }
+.pbtn.send.clicked{ background:var(--green-ink); }
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar{ position:sticky; top:0; z-index:50; background:var(--sky); border-bottom:var(--px) solid var(--navy); }
+.topbar-inner{ max-width:var(--maxw); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:18px; padding:14px 24px; }
+.topbar-logo{ display:flex; align-items:center; text-decoration:none; }
+.topbar-logo svg{ height:26px; width:auto; display:block; }
+.topbar-nav{ display:flex; gap:28px; flex:1; justify-content:center; }
+.topbar-nav a{ font-weight:600; font-size:14px; color:var(--navy); text-decoration:none; }
+.topbar-nav a:hover{ color:var(--blue); }
+@media (max-width:820px){ .topbar-nav{ display:none; } }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{ position:relative; min-height:56vh; height:auto; border-bottom:var(--px) solid var(--navy); overflow:hidden; }
+.hero-canvas-wrap{ position:absolute; inset:0; }
+#heroCanvas{ display:block; width:100%; height:100%; image-rendering:pixelated; image-rendering:crisp-edges; }
+.hero-inner{ position:relative; z-index:2; min-height:56vh; display:flex; flex-direction:column; justify-content:flex-end; padding:28px 28px 32px; }
+.hero-overlay{
+  max-width:660px; background:rgba(255,255,255,.96);
+  backdrop-filter:blur(12px) saturate(1.05); -webkit-backdrop-filter:blur(12px) saturate(1.05);
+  padding:26px 28px 30px; border:var(--px) solid var(--navy);
+  box-shadow:6px 8px 0 0 rgba(8,40,80,.18);
+}
+.kicker{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--slate);
+  margin:0 0 12px;
+}
+.hero h1{ font-weight:700; font-size:clamp(36px,5.4vw,72px); color:var(--navy); line-height:1.04; margin:0 0 14px; letter-spacing:-.01em; }
+.hero .sub{ font-size:clamp(15px,1.6vw,18px); color:var(--slate); max-width:56ch; line-height:1.55; margin:0 0 22px; }
+.hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; }
+@media (max-width:600px){
+  .hero-inner{ padding:18px 16px 22px; }
+  .hero-overlay{ padding:18px 18px 20px; max-width:none; }
+}
+
+/* ============================================================
+   WHY SAILR (section 3)
+   ============================================================ */
+.lead{ font-size:17px; color:var(--slate); max-width:70ch; margin:0 auto 44px; text-align:center; line-height:1.65; }
+
+.compare{ display:flex; gap:26px; align-items:stretch; margin-bottom:34px; }
+.compare-panel{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; }
+.compare-head{ padding:13px 16px; border-bottom:var(--px) solid var(--border); }
+.note-window, .log-strip{ flex:1; min-height:340px; padding:18px; display:flex; flex-direction:column; gap:12px; }
+.note-window{ background:#e9edf0; }
+.log-strip{ background:var(--parchment); font-family:"Iowan Old Style", Georgia, serif; }
+
+.typed-line{ position:relative; min-height:1.6em; }
+.typed-line .caret{ display:inline-block; width:7px; height:14px; vertical-align:-2px; background:var(--blue); margin-left:2px; animation:blink 1s steps(2,start) infinite; }
+.typed-line.done .caret{ display:none; }
+@keyframes blink{ 50%{ opacity:0; } }
+
+.note-typed{ font-family:'Outfit',sans-serif; font-size:14.5px; font-style:italic; color:var(--navy); }
+.note-bullets{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:7px; }
+.note-bullets li{ font-size:14px; font-weight:600; color:var(--slate); opacity:0; transform:translateY(4px); transition:opacity .25s, transform .25s; }
+.note-bullets li.show{ opacity:1; transform:translateY(0); }
+.note-stamp{ margin-top:auto; align-self:flex-start; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:.08em; color:var(--slate); border:var(--px) solid var(--slate); padding:7px 11px; opacity:0; transition:opacity .3s; }
+.note-stamp.show{ opacity:1; }
+
+.log-typed{ font-size:15px; color:var(--ink); line-height:1.5; }
+.crew-pop{ opacity:0; transform:translateY(6px); transition:opacity .3s, transform .3s; }
+.crew-pop.show{ opacity:1; transform:translateY(0); }
+.sail-stamp{ margin-top:auto; align-self:flex-start; font-family:'Outfit',sans-serif; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:.08em; color:var(--green-ink); border:var(--px) solid var(--green-ink); padding:7px 11px; opacity:0; transition:opacity .3s; background:rgba(255,255,255,.5); }
+.sail-stamp.show{ opacity:1; }
+
+.pixel-cursor{ position:absolute; width:16px; height:16px; left:0; top:0; opacity:0; pointer-events:none; z-index:5; transition:left .55s steps(7), top .55s steps(7), opacity .2s; }
+
+.punchline{ text-align:center; font-family:'Outfit'; font-weight:600; font-size:clamp(18px,2.4vw,22px); color:var(--navy); max-width:56ch; margin:0 auto 16px; line-height:1.4; }
+.why-para{ text-align:center; font-size:15px; color:var(--slate); max-width:66ch; margin:0 auto; line-height:1.6; }
+
+@media (max-width:860px){
+  .compare{ flex-direction:column; }
+  .compare-panel{ flex:none; }
+  .note-window, .log-strip{ min-height:280px; }
+}
+
+/* ============================================================
+   HOW IT WORKS (section 4)
+   ============================================================ */
+.how-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin:36px 0 30px; }
+.how-card{ padding:26px 22px; }
+.how-ico{ display:block; margin-bottom:16px; }
+.how-card h3{ font-weight:700; font-size:19px; color:var(--navy); margin:0 0 8px; }
+.how-card p{ font-size:14.5px; color:var(--slate); line-height:1.6; margin:0; }
+.how-footer{ text-align:center; font-weight:600; color:var(--navy); font-size:clamp(15px,1.8vw,17px); max-width:62ch; margin:0 auto; line-height:1.5; }
+@media (max-width:820px){ .how-grid{ grid-template-columns:1fr; } }
+
+/* ============================================================
+   THE CREW (section 5)
+   ============================================================ */
+.crew-sub{ text-align:center; font-size:16px; color:var(--slate); margin:0 auto 34px; max-width:60ch; }
+.crew-grid{ display:flex; flex-wrap:wrap; gap:22px; justify-content:center; }
+.crew-card{ flex:1 1 300px; max-width:330px; padding:24px 22px; }
+.crew-ico{ width:30px; height:30px; margin-bottom:14px; }
+.crew-card h3{ font-weight:700; font-size:16.5px; color:var(--navy); margin:0 0 8px; }
+.crew-card h3 .dot{ color:var(--slate); font-weight:400; margin:0 2px; }
+.crew-card p{ font-size:14px; color:var(--slate); line-height:1.55; margin:0; }
+.trust-strip{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:38px; }
+.trust-chip{ background:#fff; border:var(--px) solid var(--navy); padding:11px 16px; font-size:13px; font-weight:600; color:var(--navy); box-shadow:3px 4px 0 0 var(--border); }
+
+/* ============================================================
+   THE VOYAGE (section 6)
+   ============================================================ */
+.voyage-row{ display:flex; align-items:center; gap:52px; margin-bottom:76px; }
+.voyage-row.reverse{ flex-direction:row-reverse; }
+.voyage-row:last-child{ margin-bottom:0; }
+.voyage-media{ flex:0 0 380px; max-width:380px; }
+.voyage-text{ flex:1; min-width:0; }
+.voyage-text h3{ font-weight:700; font-size:clamp(22px,2.6vw,28px); color:var(--navy); margin:0 0 12px; }
+.voyage-text p{ font-size:15.5px; color:var(--slate); line-height:1.65; margin:0; max-width:48ch; }
+.pixel-window{ border:var(--px) solid var(--navy); background:#fff; box-shadow:6px 8px 0 0 rgba(8,40,80,.15); overflow:hidden; }
+.pixel-titlebar{ display:flex; gap:6px; align-items:center; padding:8px 10px; background:var(--sky); border-bottom:var(--px) solid var(--navy); }
+.pixel-titlebar .dot{ width:9px; height:9px; border:var(--px) solid var(--navy); display:block; }
+.pixel-titlebar .dot.r{ background:var(--red); } .pixel-titlebar .dot.y{ background:var(--gold); } .pixel-titlebar .dot.g{ background:var(--green); }
+.pixel-window img{ display:block; width:100%; height:auto; image-rendering:auto; }
+/* Tall, phone-shaped app screenshots (compact-sailing, compact-tidyup,
+   drawer-library) would otherwise stretch the whole row to 700-830px next
+   to a much shorter text block. Cap and crop from the top -- the app's
+   topbar/harbor/feature header is the most relevant part of each shot --
+   so every row reads as one balanced unit instead of a tall image floating
+   beside a small caption. chart-4 is already a short wide strip and is
+   left at its natural height. */
+.pixel-window.tall img{ height:350px; object-fit:cover; object-position:top; }
+@media (max-width:820px){
+  .voyage-row, .voyage-row.reverse{ flex-direction:column; gap:22px; margin-bottom:56px; }
+  .voyage-media{ flex:0 0 auto; width:100%; max-width:320px; margin:0 auto; }
+  .voyage-text{ text-align:center; }
+  .voyage-text p{ margin:0 auto; }
+  .pixel-window.tall img{ height:260px; }
+}
+
+/* ============================================================
+   THE FILM (section 7)
+   ============================================================ */
+.film-frame{ padding:0; overflow:hidden; }
+.film-16x9{ position:relative; aspect-ratio:16/9; background:var(--navy); }
+.film-16x9 video{ width:100%; height:100%; object-fit:cover; display:block; background:var(--navy); }
+.film-fallback{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:var(--navy); }
+.film-fallback[hidden]{ display:none; }
+.film-caption{ text-align:center; font-size:14px; color:var(--slate); margin:18px 0 0; }
+.film-caption a{ color:var(--blue); font-weight:600; text-decoration:underline; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer{ margin-top:clamp(64px,10vh,128px); background:var(--navy); padding:56px 24px 40px; color:var(--sky); }
+.footer-inner{ max-width:var(--maxw); margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center; }
+.wordmark-panel{ display:inline-flex; background:#fff; padding:10px 18px; border:var(--px) solid var(--navy); box-shadow:4px 6px 0 0 rgba(0,0,0,.28); }
+.wordmark-panel svg{ height:36px; width:auto; display:block; }
+.footer-tag{ font-weight:600; font-size:16px; margin:0; }
+.footer-links{ display:flex; align-items:center; gap:10px; font-size:14px; }
+.footer-links a{ color:var(--sky); text-decoration:none; font-weight:600; border-bottom:2px solid rgba(234,242,251,.35); }
+.footer-links a:hover{ border-color:var(--sky); }
+.footer-links .sep{ color:rgba(234,242,251,.5); }
+.footer-mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px; color:#9db6dd; letter-spacing:.02em; margin-top:6px; }
+</style>
+<noscript><style>.reveal{opacity:1 !important; transform:none !important}</style></noscript>
+</head>
+<body>
+
+<!-- ============================================================
+     TOPBAR
+     ============================================================ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#top" class="topbar-logo" aria-label="Sailr, home">
+      <svg viewBox="0 0 102 58" role="img" aria-label="Sailr">
+        <path fill="#082850" d="M13.11 46.506C10.3807 46.506 8.004 46.092 5.98 45.264C3.98667 44.436 2.162 43.1327 0.506 41.354L5.704 36.11C6.83867 37.306 8.05 38.226 9.338 38.87C10.626 39.4833 12.0827 39.79 13.708 39.79C15.088 39.79 16.146 39.56 16.882 39.1C17.6487 38.6093 18.032 37.95 18.032 37.122C18.032 36.3553 17.756 35.7267 17.204 35.236C16.652 34.7147 15.916 34.27 14.996 33.902C14.1067 33.5033 13.11 33.1353 12.006 32.798C10.9327 32.43 9.844 32.0007 8.74 31.51C7.66667 30.9887 6.67 30.36 5.75 29.624C4.86067 28.888 4.14 27.968 3.588 26.864C3.036 25.76 2.76 24.3953 2.76 22.77C2.76 20.6847 3.25067 18.906 4.232 17.434C5.244 15.962 6.63933 14.8273 8.418 14.03C10.1967 13.2327 12.2667 12.834 14.628 12.834C16.9893 12.834 19.1667 13.2327 21.16 14.03C23.1533 14.8273 24.794 15.9313 26.082 17.342L20.838 22.54C19.8567 21.5587 18.86 20.8227 17.848 20.332C16.836 19.8413 15.732 19.596 14.536 19.596C13.4013 19.596 12.512 19.7953 11.868 20.194C11.224 20.5927 10.902 21.16 10.902 21.896C10.902 22.632 11.178 23.23 11.73 23.69C12.282 24.15 13.0027 24.564 13.892 24.932C14.812 25.2693 15.8087 25.622 16.882 25.99C17.986 26.358 19.0747 26.7873 20.148 27.278C21.2213 27.7687 22.2027 28.3973 23.092 29.164C24.012 29.9307 24.748 30.8967 25.3 32.062C25.852 33.2273 26.128 34.638 26.128 36.294C26.128 39.5447 24.978 42.0593 22.678 43.838C20.4087 45.6167 17.2193 46.506 13.11 46.506ZM39.0874 46.46C37.0021 46.46 35.1468 45.954 33.5214 44.942C31.8961 43.93 30.6234 42.55 29.7034 40.802C28.7834 39.0233 28.3234 37.0147 28.3234 34.776C28.3234 32.5067 28.7834 30.4827 29.7034 28.704C30.6234 26.9253 31.8961 25.5453 33.5214 24.564C35.1468 23.552 37.0021 23.046 39.0874 23.046C40.4981 23.046 41.7861 23.3067 42.9514 23.828C44.1168 24.3187 45.0674 25.024 45.8034 25.944C46.5701 26.864 47.0301 27.9067 47.1834 29.072V40.388C47.0301 41.584 46.5701 42.642 45.8034 43.562C45.0674 44.4513 44.1168 45.1567 42.9514 45.678C41.7861 46.1993 40.4981 46.46 39.0874 46.46ZM40.7894 39.33C42.1081 39.33 43.1661 38.9007 43.9634 38.042C44.7914 37.1833 45.2054 36.0793 45.2054 34.73C45.2054 33.8407 45.0214 33.0587 44.6534 32.384C44.2854 31.7093 43.7641 31.1727 43.0894 30.774C42.4454 30.3753 41.6941 30.176 40.8354 30.176C39.9768 30.176 39.2101 30.3753 38.5354 30.774C37.8914 31.1727 37.3701 31.7247 36.9714 32.43C36.6034 33.1047 36.4194 33.8713 36.4194 34.73C36.4194 35.6193 36.6034 36.4167 36.9714 37.122C37.3394 37.7967 37.8608 38.3333 38.5354 38.732C39.2101 39.1307 39.9614 39.33 40.7894 39.33ZM44.8834 46V39.974L46.0334 34.454L44.8834 29.026V23.506H52.7494V46H44.8834ZM57.4202 46V23.506H65.4242V46H57.4202ZM70.1331 46V12.466H78.1371V46H70.1331ZM82.846 46V23.506H90.85V46H82.846ZM90.85 33.764L87.262 30.728C88.1513 28.1827 89.332 26.266 90.804 24.978C92.276 23.69 94.1927 23.046 96.554 23.046C97.6273 23.046 98.5473 23.184 99.314 23.46C100.111 23.736 100.786 24.1653 101.338 24.748L96.692 30.958C96.4467 30.682 96.094 30.4673 95.634 30.314C95.2047 30.13 94.714 30.038 94.162 30.038C93.1193 30.038 92.3067 30.36 91.724 31.004C91.1413 31.6173 90.85 32.5373 90.85 33.764Z"/>
+        <path fill="#0061FF" d="M61.66 5.93201C67.939 8.34701 69.388 14.626 67.939 21.388H55.381L61.66 5.93201Z"/>
+      </svg>
+    </a>
+    <nav class="topbar-nav">
+      <a href="#why">Why Sailr</a>
+      <a href="#how">How it works</a>
+      <a href="#crew">The crew</a>
+      <a href="#voyage">The voyage</a>
+      <a href="#film">The film</a>
+    </nav>
+    <a class="btn-sail small" href="https://github.com/jii-win/sailr" target="_blank" rel="noopener">
+      <svg class="mini-sail" viewBox="0 0 15 15" aria-hidden="true">
+        <g fill="#0061FF"><rect x="6" y="1" width="3" height="2"/><rect x="6" y="3" width="6" height="2"/><rect x="6" y="5" width="6" height="2"/><rect x="6" y="7" width="6" height="2"/></g>
+        <rect x="6" y="1" width="2" height="12" fill="#082850"/>
+      </svg>
+      Get Sailr
+    </a>
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero" id="top">
+  <div class="hero-canvas-wrap"><canvas id="heroCanvas" class="pixel" aria-hidden="true"></canvas></div>
+  <div class="hero-inner">
+    <div class="hero-overlay reveal in-view">
+      <p class="kicker">A MAC APP WITH A CREW</p>
+      <h1>The meeting ends. The work is already done.</h1>
+      <p class="sub">Sailr listens on your Mac. The moment a task is said out loud, a Claude-powered crew is already on it: your calendar checked, the answer found, the Slack message drafted. Nothing sends until you nod.</p>
+      <div class="hero-ctas">
+        <a href="#film" class="btn-sail blue" data-scroll>Watch the film</a>
+        <a href="https://github.com/jii-win/sailr" target="_blank" rel="noopener" class="btn-sail">
+          <svg class="mini-sail" viewBox="0 0 15 15" aria-hidden="true">
+            <g fill="#0061FF"><rect x="6" y="1" width="3" height="2"/><rect x="6" y="3" width="6" height="2"/><rect x="6" y="5" width="6" height="2"/><rect x="6" y="7" width="6" height="2"/></g>
+            <rect x="6" y="1" width="2" height="12" fill="#082850"/>
+          </svg>
+          Get Sailr
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     WHY SAILR
+     ============================================================ -->
+<section id="why" class="section">
+  <h2 class="reveal">Not a notetaker. A doer.</h2>
+  <p class="lead reveal">Every AI meeting tool ends the same way: a page of notes and a list of things you still have to go do yourself. Transcribe, summarize, sync a few fields, then hand you homework. Sailr does not stop there. The second someone says &quot;can you check what we quoted them&quot; or &quot;Slack Sam the timeline,&quot; the crew is already moving, in your own Calendar, your own Gmail, your own Slack. Not a summary of the task. The task.</p>
+
+  <div class="compare reveal" id="compare">
+    <div class="compare-panel panel">
+      <div class="compare-head"><span class="chip slate">An AI notetaker</span></div>
+      <div class="note-window">
+        <p class="typed-line note-typed" id="noteTyped" aria-hidden="true"><span class="txt"></span><span class="caret"></span></p>
+        <span class="sr-only">&quot;...can you check what we quoted Acme last time?&quot;</span>
+        <ul class="note-bullets" id="noteBullets">
+          <li>- check the quote</li>
+          <li>- send the deck</li>
+          <li>- find a time next week</li>
+        </ul>
+        <div class="note-stamp" id="noteStamp">now it is your to-do list.</div>
+      </div>
+    </div>
+    <div class="compare-panel panel">
+      <div class="compare-head"><span class="chip blue">Sailr</span></div>
+      <div class="log-strip">
+        <p class="typed-line log-typed" id="logTyped" aria-hidden="true"><span class="txt"></span><span class="caret"></span></p>
+        <span class="sr-only">&quot;...can you check what we quoted Acme last time?&quot;</span>
+
+        <div class="acard crew-pop" id="lookoutCard">
+          <div class="acard-top">
+            <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#0061FF" stroke-width="1.4"/><rect x="2" y="7.4" width="12" height="1.2" fill="#0061FF"/><path d="M8 2.5 L10 8 L8 13.5 L6 8 Z" fill="none" stroke="#0061FF" stroke-width="1"/></svg>
+            Lookout checked the Acme quote
+            <span class="tag read">Read · done</span>
+          </div>
+          <div class="acard-body">$18,400 on the March order.</div>
+        </div>
+
+        <div class="acard crew-pop" id="slackCard">
+          <div class="acard-top">
+            <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/></svg>
+            Slack draft
+            <span class="tag send" id="slackTag">Send · needs a nod</span>
+          </div>
+          <div class="dm">&rarr; Sam Whitfield: &quot;Confirmed with Lookout, we quoted Acme $18,400 on the March order. Sending you the deck now.&quot;</div>
+          <div class="confirm-row">
+            <button class="pbtn send" id="sendBtn" tabindex="-1">Send</button>
+            <svg class="pixel-cursor" id="pixelCursor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2 1 L2 14 L5.4 11 L7.6 15.4 L9.6 14.4 L7.4 10 L11.6 10 Z" fill="#fff" stroke="#082850" stroke-width="1.2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sail-stamp" id="sailStamp">already done.</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="punchline reveal">One hands you a to-do list. The other is already three tasks into it.</p>
+  <p class="why-para reveal">There is no handoff. The listener and the doer are the same boat. Nothing gets exported to another app or pasted into a chatbot for you to babysit. The doing is baked in.</p>
+</section>
+
+<!-- ============================================================
+     HOW IT WORKS
+     ============================================================ -->
+<section id="how" class="section">
+  <h2 class="reveal">A crew, not a transcript.</h2>
+  <div class="how-grid">
+    <div class="how-card panel reveal">
+      <canvas class="how-ico pixel" data-icon="ears" width="48" height="48"></canvas>
+      <h3>The ears</h3>
+      <p>Whisper runs locally on your Mac. Your meetings never leave the machine to become somebody's training data.</p>
+    </div>
+    <div class="how-card panel reveal">
+      <canvas class="how-ico pixel" data-icon="brain" width="48" height="48"></canvas>
+      <h3>The brain</h3>
+      <p>Claude reads the transcript as it streams and catches tasks the moment they are said. No wake word, no commands to memorize.</p>
+    </div>
+    <div class="how-card panel reveal">
+      <canvas class="how-ico pixel" data-icon="crew" width="48" height="48"></canvas>
+      <h3>The crew</h3>
+      <p>Headless Claude Code works your own connected tools in the background. Connect them once at claude.ai and Sailr is wired.</p>
+    </div>
+  </div>
+  <p class="how-footer reveal">By the time you have moved to the next agenda item, the crew is already below deck, working.</p>
+</section>
+
+<!-- ============================================================
+     THE CREW
+     ============================================================ -->
+<section id="crew" class="section">
+  <h2 class="reveal">Meet the crew.</h2>
+  <p class="crew-sub reveal">Five mates, one rule: reads run themselves, sends wait for your nod.</p>
+  <div class="crew-grid">
+    <div class="crew-card panel reveal">
+      <svg class="crew-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#0061FF" stroke-width="1.4"/><rect x="2" y="7.4" width="12" height="1.2" fill="#0061FF"/><path d="M8 2.5 L10 8 L8 13.5 L6 8 Z" fill="none" stroke="#0061FF" stroke-width="1"/></svg>
+      <h3>Lookout <span class="dot">&middot;</span> Web search</h3>
+      <p>Answers the questions the room asks out loud, sources and all.</p>
+    </div>
+    <div class="crew-card panel reveal">
+      <svg class="crew-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="4" width="12" height="10" fill="#00B368"/><rect x="2" y="4" width="12" height="3" fill="#082850"/><rect x="4.5" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="10" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="4" y="8.5" width="2" height="2" fill="#fff"/><rect x="7" y="8.5" width="2" height="2" fill="#fff"/><rect x="10" y="8.5" width="2" height="2" fill="#fff"/><rect x="4" y="11.2" width="2" height="2" fill="#FFC400"/><rect x="7" y="11.2" width="2" height="2" fill="#fff"/></svg>
+      <h3>Calendar</h3>
+      <p>Checks your day in a heartbeat. Booking the follow-up waits for your nod.</p>
+    </div>
+    <div class="crew-card panel reveal">
+      <svg class="crew-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="3.5" width="13" height="9" fill="#0061FF"/><rect x="1.5" y="3.5" width="13" height="2.2" fill="#fff"/><path d="M1.5 3.5 L8 8.5 L14.5 3.5 Z" fill="#CFE0FB"/></svg>
+      <h3>First Mate <span class="dot">&middot;</span> Gmail</h3>
+      <p>Drafts the email in your voice. Drafts only. You press send.</p>
+    </div>
+    <div class="crew-card panel reveal">
+      <svg class="crew-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/></svg>
+      <h3>Slack</h3>
+      <p>Writes the message, resolves the right channel, sends on your nod.</p>
+    </div>
+    <div class="crew-card panel reveal">
+      <svg class="crew-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" fill="#082850"/><path d="M4.5 6 L7 8.5 L4.5 11" fill="none" stroke="#00B368" stroke-width="1.3"/><rect x="8.5" y="10" width="3.5" height="1.3" fill="#00B368"/></svg>
+      <h3>Claude Code</h3>
+      <p>Spins up a session on your Mac to build the demo or run the task.</p>
+    </div>
+  </div>
+  <div class="trust-strip">
+    <span class="trust-chip reveal">Reads run free. Sends wait for the nod.</span>
+    <span class="trust-chip reveal">Local Whisper. Meetings stay on your Mac.</span>
+    <span class="trust-chip reveal">Your own Claude account. No API keys.</span>
+    <span class="trust-chip reveal">Verified sends. &quot;Sent&quot; is ground truth, not hope.</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     THE VOYAGE
+     ============================================================ -->
+<section id="voyage" class="section">
+  <h2 class="reveal">The whole voyage, logged.</h2>
+
+  <div class="voyage-row reveal">
+    <div class="voyage-media">
+      <div class="pixel-window tall">
+        <div class="pixel-titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <img src="assets/app/compact-sailing.png" alt="The Sailr app mid-sail: live transcript, sea chart and crew cards" width="780" height="1400" loading="lazy">
+      </div>
+    </div>
+    <div class="voyage-text">
+      <h3>Captain's Log</h3>
+      <p>The live transcript writes itself in ink, in a pixel logbook whose pages really flip. Highlight nothing, memorize nothing. It is all in the log.</p>
+    </div>
+  </div>
+
+  <div class="voyage-row reverse reveal">
+    <div class="voyage-media">
+      <div class="pixel-window">
+        <div class="pixel-titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <img src="assets/app/chart-4.png" alt="The Chart: topics of the conversation as numbered buoys" width="780" height="120" loading="lazy">
+      </div>
+    </div>
+    <div class="voyage-text">
+      <h3>The Chart</h3>
+      <p>Every topic becomes a numbered buoy on the sea chart, so you can see the conversation make headway while it happens.</p>
+    </div>
+  </div>
+
+  <div class="voyage-row reveal">
+    <div class="voyage-media">
+      <div class="pixel-window tall">
+        <div class="pixel-titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <img src="assets/app/compact-tidyup.png" alt="Tidy Up wrap: recap, topics covered, who is doing what" width="780" height="1400" loading="lazy">
+      </div>
+    </div>
+    <div class="voyage-text">
+      <h3>Tidy Up</h3>
+      <p>Moor the sail and the wrap writes itself: recap, topics covered, who is doing what, follow-ups. One tap Slacks the whole package to you.</p>
+    </div>
+  </div>
+
+  <div class="voyage-row reverse reveal">
+    <div class="voyage-media">
+      <div class="pixel-window tall">
+        <div class="pixel-titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <img src="assets/app/drawer-library.png" alt="Boats and sails library: switching between profiles and sessions" width="600" height="704" loading="lazy">
+      </div>
+    </div>
+    <div class="voyage-text">
+      <h3>Boats and sails</h3>
+      <p>Every session is a sail. Every profile is a boat. Switch crews for work, clients, or the side project without mixing logs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     THE FILM
+     ============================================================ -->
+<section id="film" class="section">
+  <h2 class="reveal">Sixty seconds, start to done.</h2>
+  <div class="film-frame panel reveal">
+    <div class="film-16x9">
+      <video id="trailerVideo" controls preload="metadata" poster="assets/poster.png">
+        <source src="trailer/sailr-trailer.mp4" type="video/mp4">
+      </video>
+      <div class="film-fallback" id="filmFallback" hidden>
+        <a class="btn-sail blue" href="trailer/index.html">
+          <svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true"><polygon points="3,1 13,7.5 3,14" fill="#fff"/></svg>
+          Watch the film
+        </a>
+      </div>
+    </div>
+  </div>
+  <p class="film-caption reveal">Prefer it live? <a href="trailer/index.html">Watch the film in your browser</a>.</p>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="wordmark-panel">
+      <svg viewBox="0 0 102 58" role="img" aria-label="Sailr">
+        <path fill="#082850" d="M13.11 46.506C10.3807 46.506 8.004 46.092 5.98 45.264C3.98667 44.436 2.162 43.1327 0.506 41.354L5.704 36.11C6.83867 37.306 8.05 38.226 9.338 38.87C10.626 39.4833 12.0827 39.79 13.708 39.79C15.088 39.79 16.146 39.56 16.882 39.1C17.6487 38.6093 18.032 37.95 18.032 37.122C18.032 36.3553 17.756 35.7267 17.204 35.236C16.652 34.7147 15.916 34.27 14.996 33.902C14.1067 33.5033 13.11 33.1353 12.006 32.798C10.9327 32.43 9.844 32.0007 8.74 31.51C7.66667 30.9887 6.67 30.36 5.75 29.624C4.86067 28.888 4.14 27.968 3.588 26.864C3.036 25.76 2.76 24.3953 2.76 22.77C2.76 20.6847 3.25067 18.906 4.232 17.434C5.244 15.962 6.63933 14.8273 8.418 14.03C10.1967 13.2327 12.2667 12.834 14.628 12.834C16.9893 12.834 19.1667 13.2327 21.16 14.03C23.1533 14.8273 24.794 15.9313 26.082 17.342L20.838 22.54C19.8567 21.5587 18.86 20.8227 17.848 20.332C16.836 19.8413 15.732 19.596 14.536 19.596C13.4013 19.596 12.512 19.7953 11.868 20.194C11.224 20.5927 10.902 21.16 10.902 21.896C10.902 22.632 11.178 23.23 11.73 23.69C12.282 24.15 13.0027 24.564 13.892 24.932C14.812 25.2693 15.8087 25.622 16.882 25.99C17.986 26.358 19.0747 26.7873 20.148 27.278C21.2213 27.7687 22.2027 28.3973 23.092 29.164C24.012 29.9307 24.748 30.8967 25.3 32.062C25.852 33.2273 26.128 34.638 26.128 36.294C26.128 39.5447 24.978 42.0593 22.678 43.838C20.4087 45.6167 17.2193 46.506 13.11 46.506ZM39.0874 46.46C37.0021 46.46 35.1468 45.954 33.5214 44.942C31.8961 43.93 30.6234 42.55 29.7034 40.802C28.7834 39.0233 28.3234 37.0147 28.3234 34.776C28.3234 32.5067 28.7834 30.4827 29.7034 28.704C30.6234 26.9253 31.8961 25.5453 33.5214 24.564C35.1468 23.552 37.0021 23.046 39.0874 23.046C40.4981 23.046 41.7861 23.3067 42.9514 23.828C44.1168 24.3187 45.0674 25.024 45.8034 25.944C46.5701 26.864 47.0301 27.9067 47.1834 29.072V40.388C47.0301 41.584 46.5701 42.642 45.8034 43.562C45.0674 44.4513 44.1168 45.1567 42.9514 45.678C41.7861 46.1993 40.4981 46.46 39.0874 46.46ZM40.7894 39.33C42.1081 39.33 43.1661 38.9007 43.9634 38.042C44.7914 37.1833 45.2054 36.0793 45.2054 34.73C45.2054 33.8407 45.0214 33.0587 44.6534 32.384C44.2854 31.7093 43.7641 31.1727 43.0894 30.774C42.4454 30.3753 41.6941 30.176 40.8354 30.176C39.9768 30.176 39.2101 30.3753 38.5354 30.774C37.8914 31.1727 37.3701 31.7247 36.9714 32.43C36.6034 33.1047 36.4194 33.8713 36.4194 34.73C36.4194 35.6193 36.6034 36.4167 36.9714 37.122C37.3394 37.7967 37.8608 38.3333 38.5354 38.732C39.2101 39.1307 39.9614 39.33 40.7894 39.33ZM44.8834 46V39.974L46.0334 34.454L44.8834 29.026V23.506H52.7494V46H44.8834ZM57.4202 46V23.506H65.4242V46H57.4202ZM70.1331 46V12.466H78.1371V46H70.1331ZM82.846 46V23.506H90.85V46H82.846ZM90.85 33.764L87.262 30.728C88.1513 28.1827 89.332 26.266 90.804 24.978C92.276 23.69 94.1927 23.046 96.554 23.046C97.6273 23.046 98.5473 23.184 99.314 23.46C100.111 23.736 100.786 24.1653 101.338 24.748L96.692 30.958C96.4467 30.682 96.094 30.4673 95.634 30.314C95.2047 30.13 94.714 30.038 94.162 30.038C93.1193 30.038 92.3067 30.36 91.724 31.004C91.1413 31.6173 90.85 32.5373 90.85 33.764Z"/>
+        <path fill="#0061FF" d="M61.66 5.93201C67.939 8.34701 69.388 14.626 67.939 21.388H55.381L61.66 5.93201Z"/>
+      </svg>
+    </div>
+    <p class="footer-tag">Your crew, always on watch.</p>
+    <div class="footer-links">
+      <a href="https://github.com/jii-win/sailr" target="_blank" rel="noopener">GitHub</a>
+      <span class="sep">&middot;</span>
+      <a href="#film" data-scroll>Watch the film</a>
+    </div>
+    <p class="footer-mono">Built on your own Claude. Runs on your own Mac.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   TINY UTILS
+   ============================================================ */
+function debounce(fn, ms){ var t; return function(){ clearTimeout(t); var a=arguments; t=setTimeout(function(){ fn.apply(null,a); }, ms); }; }
+function wait(ms){ return new Promise(function(res){ setTimeout(res, ms); }); }
+
+/* ============================================================
+   SMOOTH ANCHOR SCROLL
+   ============================================================ */
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener('click', function(e){
+    var id = a.getAttribute('href');
+    if(id.length < 2) return;
+    var target = document.querySelector(id);
+    if(!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block:'start' });
+  });
+});
+
+/* ============================================================
+   REVEAL ON SCROLL
+   ============================================================ */
+(function(){
+  var targets = document.querySelectorAll('.reveal');
+  if(prefersReduced || !('IntersectionObserver' in window)){
+    targets.forEach(function(el){ el.classList.add('in-view'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold:0.12 });
+  targets.forEach(function(el){ io.observe(el); });
+})();
+
+/* ============================================================
+   SHARED PIXEL-ART RENDERER  (ported from docs/design-cozy-pixel-mockup.html)
+   ============================================================ */
+var PAL = {
+  navy:'#082850', blue:'#0061FF', sky:'#EAF2FB', green:'#00B368', greenInk:'#0A7A47',
+  slate:'#5A7184', border:'#DAE4EF', gold:'#FFC400', red:'#E4002B',
+  hullDark:'#041838', waterDark:'#1f4fc0', waterMid:'#3f74e8',
+  sunGlow:'#FFE08A', cloud:'#ffffff', cloudShade:'#dfeafa',
+  sailWhite:'#f4f8ff', sailShade:'#d7e4fb', rig:'#3a567f',
+  skin:'#FFE08A', skinShade:'#F6C760'
+};
+
+function makePainter(canvas, GW, GH){
+  var ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  var sx = canvas.width / GW, sy = canvas.height / GH;
+  return {
+    ctx: ctx, GW: GW, GH: GH, sx: sx, sy: sy,
+    clear: function(){ ctx.clearRect(0,0,canvas.width,canvas.height); },
+    px: function(x,y,c){ ctx.fillStyle=c; ctx.fillRect(Math.round(x*sx),Math.round(y*sy),Math.ceil(sx),Math.ceil(sy)); },
+    rect: function(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(Math.round(x*sx),Math.round(y*sy),Math.ceil(w*sx),Math.ceil(h*sy)); },
+    dither: function(x,y,w,h,c1,c2){ for(var j=0;j<h;j++) for(var i=0;i<w;i++) this.px(x+i,y+j,((i+j)&1)?c2:c1); }
+  };
+}
+
+function fillTri(p, x1,y1,x2,y2,x3,y3, c){
+  var minY=Math.floor(Math.min(y1,y2,y3)), maxY=Math.ceil(Math.max(y1,y2,y3));
+  for(var y=minY;y<=maxY;y++){
+    var xs=[]; var E=[[x1,y1,x2,y2],[x2,y2,x3,y3],[x3,y3,x1,y1]];
+    for(var k=0;k<3;k++){
+      var ax=E[k][0], ay=E[k][1], bx=E[k][2], by=E[k][3];
+      if((ay<=y&&by>y)||(by<=y&&ay>y)) xs.push(ax+(bx-ax)*((y-ay)/(by-ay)));
+    }
+    if(xs.length>=2){ var xa=Math.round(Math.min.apply(null,xs)), xb=Math.round(Math.max.apply(null,xs)); for(var x=xa;x<=xb;x++) p.px(x,y,c); }
+  }
+}
+function lineP(p, x1,y1,x2,y2,c){
+  var dx=x2-x1, dy=y2-y1, n=Math.max(Math.abs(dx),Math.abs(dy))||1;
+  for(var i=0;i<=n;i++) p.px(Math.round(x1+dx*i/n), Math.round(y1+dy*i/n), c);
+}
+function drawCrewMember(p, x, footY, shirt, wave){
+  p.rect(x, footY-4, 2, 2, PAL.skin);
+  p.px(x+1, footY-4, PAL.skinShade);
+  p.rect(x, footY-2, 2, 2, shirt);
+  p.px(x, footY, PAL.navy); p.px(x+1, footY, PAL.navy);
+  if(wave){ p.px(x+2, footY-3, shirt); } else { p.px(x-1, footY-2, shirt); }
+}
+
+function drawCloud(p,x,y,scale){
+  var rows=[[2,5],[0,9],[-1,12],[0,10]];
+  var yy=y;
+  for(var idx=0; idx<rows.length; idx++){
+    var ox=Math.round(rows[idx][0]*scale), w=Math.round(rows[idx][1]*scale+(scale<1?1:0));
+    p.rect(x+ox, yy, w, 1, idx===rows.length-1?PAL.cloudShade:PAL.cloud);
+    yy++;
+  }
+}
+function drawSky(p, opts){
+  var GW=p.GW, GH=p.GH;
+  var band = Math.floor(GH*0.34);
+  p.rect(0,0,GW,band,PAL.sky);
+  p.dither(0,band,GW,3,PAL.sky,'#e1ecfa');
+  p.rect(0,band+3,GW,Math.max(0,Math.floor(GH*0.10)-3),'#e1ecfa');
+  var sunX=opts.sunX, sunY=opts.sunY, r=5;
+  for(var y=-r-2;y<=r+2;y++) for(var x=-r-2;x<=r+2;x++){
+    var d=Math.sqrt(x*x+y*y);
+    if(d>r && d<=r+2.3 && ((x+y)&1)) p.px(sunX+x,sunY+y,PAL.sunGlow);
+  }
+  for(var y2=-r;y2<=r;y2++) for(var x2=-r;x2<=r;x2++){
+    if(x2*x2+y2*y2<=r*r){ p.px(sunX+x2,sunY+y2,(x2<0&&y2<0)?'#FFD24D':PAL.gold); }
+  }
+  drawCloud(p, opts.cloudX, opts.cloudY, 1);
+  if(opts.cloud2X!=null) drawCloud(p, opts.cloud2X, opts.cloud2Y, .8);
+  if(opts.cloud3X!=null) drawCloud(p, opts.cloud3X, opts.cloud3Y, .6);
+}
+
+/* fast layered water (no per-pixel stipple, cheap enough for a full-bleed hero) */
+function drawWater(p, top, phase){
+  var GW=p.GW, GH=p.GH, h=GH-top;
+  p.rect(0,top,GW,h,'#cfe0fb');
+  var midTop = top+Math.floor(h*0.30);
+  p.rect(0,midTop,GW,GH-midTop,PAL.waterMid);
+  var deepTop = top+Math.floor(h*0.62);
+  p.rect(0,deepTop,GW,GH-deepTop,PAL.waterDark);
+  var crestY=[top+1,midTop+1,deepTop+1], crestC=['#ffffff','#dceafe','#cfe0fb'];
+  for(var ci=0; ci<3; ci++){
+    var cy=crestY[ci], speed=ci+1;
+    for(var x=0;x<GW;x+=6){
+      var ox=(x+Math.round(Math.sin((phase*speed+x)*0.5)*1.5)+phase*speed)%(GW+6)-3;
+      p.px(ox,cy,crestC[ci]); p.px(ox+1,cy,crestC[ci]);
+    }
+  }
+}
+
+function drawLighthouse(p, x, baseY){
+  var w=5;
+  p.rect(x-4, baseY-1, w+4, 3, PAL.hullDark);
+  var top = baseY-24;
+  for(var y=baseY-3, i=0; y>top; y--, i++){
+    var band = Math.floor(i/3)%2===1;
+    p.rect(x-2, y, w, 1, band?PAL.red:'#ffffff');
+  }
+  p.rect(x-3, top-4, w+2, 4, PAL.navy);
+  p.rect(x-1, top-3, w-2, 2, PAL.sunGlow);
+  p.rect(x-3, top-6, w+2, 2, PAL.navy);
+  p.px(x, top-7, PAL.navy);
+}
+
+function drawDistantBoat(p, x, baseY, scale){
+  scale = scale || 1;
+  var hw = Math.round(4*scale), mh = Math.round(7*scale);
+  p.rect(x-hw, baseY, hw*2, 2, PAL.navy);
+  p.rect(x-1, baseY-mh, 1, mh, PAL.navy);
+  p.rect(x-1, baseY-mh, Math.round(3*scale), 1, PAL.rig);
+}
+
+/* ---- THE BOAT: proper sloop rig, ported verbatim from the mockup ---- */
+function drawBoat(p, cx, baseY, opts){
+  var heel = opts.heel||0;
+  var raise = opts.sailRaise==null?1:opts.sailRaise;
+  var lean = Math.round(heel*3);
+  var deckY = baseY;
+
+  var hullRows=[
+    {w:34,c:PAL.navy},{w:34,c:PAL.blue},{w:32,c:PAL.navy},
+    {w:28,c:PAL.navy},{w:22,c:PAL.hullDark},{w:14,c:PAL.hullDark}
+  ];
+  hullRows.forEach(function(r,i){ var x=Math.round(cx-r.w/2); p.rect(x,deckY+i,r.w,1,r.c); });
+  p.px(Math.round(cx+17),deckY+1,PAL.navy);
+  p.px(Math.round(cx-17),deckY+1,PAL.navy);
+
+  var mastBaseY=deckY-1, mastTopY=deckY-30;
+  var mastTopX=cx+lean;
+  var boomY=deckY-3, boomEndX=cx-15;
+  var bowX=cx+18, bowY=deckY-1;
+
+  if(raise>0.04){
+    var headY=Math.round(mastTopY+(1-raise)*(boomY-mastTopY));
+    var headX=Math.round(cx+lean*((mastBaseY-headY)/(mastBaseY-mastTopY)));
+    fillTri(p, headX,headY,  cx,boomY,  boomEndX,boomY, PAL.sailWhite);
+    lineP(p, boomEndX,boomY, headX,headY, PAL.sailShade);
+  } else {
+    p.rect(boomEndX+1, boomY-2, (cx-boomEndX), 2, PAL.sailShade);
+  }
+
+  p.rect(boomEndX, boomY, (cx-boomEndX)+1, 1, '#0b1f3a');
+
+  for(var y=mastBaseY; y>=mastTopY; y--){
+    var t=(mastBaseY-y)/(mastBaseY-mastTopY);
+    p.px(Math.round(cx+lean*t), y, PAL.navy);
+  }
+
+  lineP(p, mastTopX,mastTopY, bowX,bowY, PAL.rig);
+
+  if(raise>0.04){
+    var u=0.12+0.82*raise;
+    var jhX=Math.round(bowX+(mastTopX-bowX)*u);
+    var jhY=Math.round(bowY+(mastTopY-bowY)*u);
+    fillTri(p, jhX,jhY,  bowX,bowY,  cx+3,deckY-2, PAL.blue);
+    lineP(p, jhX,jhY, bowX,bowY, '#0b1f3a');
+  }
+
+  var fl=(opts.phase|0)%2;
+  p.px(mastTopX,   mastTopY-1, PAL.gold);
+  p.px(mastTopX+1, mastTopY-1, PAL.gold);
+  p.px(mastTopX+2, mastTopY-1+fl, PAL.gold);
+
+  var ph=(opts.phase|0);
+  drawCrewMember(p, Math.round(cx-9), deckY-1, PAL.gold, ph%2===0);
+  drawCrewMember(p, Math.round(cx-3), deckY-1, PAL.blue, false);
+}
+
+function drawWind(p, cx, y, phase){
+  var off=phase%14;
+  for(var i=0;i<3;i++){
+    var wx=(cx-26)-off-i*4, wy=y-6-i*3;
+    if(wx>0){ p.px(wx,wy,'#ffffff'); p.px(wx-2,wy,'#ffffff'); }
+  }
+  for(var j=0;j<4;j++){ if((phase+j)%6<3) p.px(cx+15+j, y+2-(j%2), '#ffffff'); }
+}
+
+/* ============================================================
+   SHARED rAF LOOP: one clock drives every canvas scene
+   ============================================================ */
+var scenes = [];
+function registerScene(scene){ scenes.push(scene); }
+(function(){
+  function loop(now){
+    for(var i=0;i<scenes.length;i++){
+      var s = scenes[i];
+      if(!s.active || document.hidden) continue;
+      if(now - s.last >= s.interval){ s.last = now; s.draw(now); }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* ============================================================
+   HERO HARBOR SCENE
+   ============================================================ */
+(function(){
+  var canvas = document.getElementById('heroCanvas');
+  if(!canvas) return;
+  var wrap = canvas.parentElement;
+  var painter = null, GW=0, GH=0;
+  var startTime = performance.now();
+
+  function resize(){
+    var rect = wrap.getBoundingClientRect();
+    var cssW = Math.max(1, Math.round(rect.width));
+    var cssH = Math.max(1, Math.round(rect.height));
+    var VPX = 5;
+    GW = Math.max(90, Math.round(cssW / VPX));
+    GH = Math.max(56, Math.round(cssH / VPX));
+    // Round to an integer scale so the virtual pixel grid always lands on
+    // whole device pixels; a fractional DPR (e.g. 1.5, common on external
+    // displays) would otherwise blur the "pixelated" canvas.
+    var dpr = Math.max(1, Math.min(2, Math.round(window.devicePixelRatio||1)));
+    canvas.width = GW*VPX*dpr;
+    canvas.height = GH*VPX*dpr;
+    canvas.style.width = cssW+'px';
+    canvas.style.height = cssH+'px';
+    painter = makePainter(canvas, GW, GH);
+    // Setting canvas.width/height (even to an unchanged value) resets and
+    // clears the drawing buffer per the HTML spec. The rAF loop repaints
+    // every frame anyway, but the reduced-motion path draws exactly once up
+    // front -- a later reflow (e.g. the Outfit webfont finishing load and
+    // reflowing the hero-overlay) would otherwise silently blank the canvas.
+    // Repaint immediately whenever we resize so that path stays correct too.
+    if(prefersReduced) draw(3.5*1000);
+  }
+  resize();
+  window.addEventListener('resize', debounce(resize,150));
+  if('ResizeObserver' in window){ new ResizeObserver(debounce(resize,150)).observe(wrap); }
+
+  function draw(elapsedMs){
+    var p = painter; if(!p) return;
+    var t = elapsedMs/1000;
+    p.clear();
+    var GWl=p.GW, GHl=p.GH;
+    /* Keep the left ~40% of the band calm (plain sky/water) so the
+       translucent text panel over it stays legible; the sun, lighthouse
+       and boat all live in the right 60%. */
+    drawSky(p, {
+      sunX: Math.round(GWl*0.80), sunY: Math.round(GHl*0.09),
+      cloudX: ((GWl*0.55 + t*3) % (GWl*0.6+40)) + GWl*0.4 - 20, cloudY: Math.round(GHl*0.12),
+      cloud2X: ((GWl*0.7 + t*2) % (GWl*0.6+50)) + GWl*0.4 - 25, cloud2Y: Math.round(GHl*0.22),
+      cloud3X: ((GWl*0.85 + t*4) % (GWl*0.5+30)) + GWl*0.5 - 15, cloud3Y: Math.round(GHl*0.08)
+    });
+    var waterTop = Math.round(GHl*0.46);
+    var phase = Math.floor(t*10);
+    drawWater(p, waterTop, phase);
+    drawLighthouse(p, Math.round(GWl*0.64), waterTop+3);
+    drawDistantBoat(p, Math.round(GWl*0.88), waterTop+7, 0.9);
+    drawDistantBoat(p, Math.round(GWl*0.95), waterTop+5, 0.7);
+
+    var hoistDelay = 1.2, hoistDur = 0.9;
+    var raise = t < hoistDelay ? 0 : Math.min(1, (t-hoistDelay)/hoistDur);
+    var sailing = raise >= 1;
+    var bob = Math.sin(t*2.1)*1.2;
+    var heel = sailing ? (0.6+Math.sin(t*1.1)*0.18) : raise*0.4;
+    var boatCx = Math.round(GWl*0.74);
+    drawBoat(p, boatCx, waterTop+8+Math.round(bob), { heel: heel, sailRaise: raise, phase: Math.floor(t*10) });
+    if(raise>0.55){ drawWind(p, boatCx, waterTop+Math.round(bob), Math.floor(t*14)); }
+  }
+
+  var scene = { active:true, last:0, interval: 1000/24, draw: function(now){ draw(now-startTime); } };
+
+  if(!prefersReduced){
+    // resize() already painted the reduced-motion static frame (and
+    // repaints it on every reflow); only the animated path needs the
+    // shared rAF loop registered.
+    registerScene(scene);
+    // Two independent booleans -- the scene should only draw when the hero
+    // is actually in the viewport AND the tab is visible. Previously the
+    // visibilitychange handler unconditionally set scene.active, so coming
+    // back to the tab would resume the animation even if the hero had been
+    // scrolled out of view in the meantime.
+    var inView = false, tabVisible = !document.hidden;
+    function updateActive(){ scene.active = inView && tabVisible; }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ inView = e.isIntersecting; });
+      updateActive();
+    }, { threshold:0 });
+    io.observe(canvas.closest('.hero'));
+    document.addEventListener('visibilitychange', function(){ tabVisible = !document.hidden; updateActive(); });
+  }
+})();
+
+/* ============================================================
+   "HOW IT WORKS" TINY PIXEL ICONS
+   ============================================================ */
+(function(){
+  document.querySelectorAll('.how-ico').forEach(function(canvas){
+    var GW=16, GH=16;
+    var p = makePainter(canvas, GW, GH);
+    var kind = canvas.getAttribute('data-icon');
+
+    function drawEars(t){
+      p.clear();
+      var bars = 6, midY = 8;
+      for(var i=0;i<bars;i++){
+        var x = 2+i*2;
+        var amp = prefersReduced ? [3,5,2,6,3,4][i] : (3+Math.round(3*Math.abs(Math.sin(t*0.003+i*0.8))));
+        p.rect(x, midY-Math.ceil(amp/2), 1, amp, i%2? PAL.blue : PAL.navy);
+      }
+    }
+    function drawBrain(){
+      p.clear();
+      p.rect(3,4,10,8,PAL.navy);
+      p.rect(2,6,1,4,PAL.navy); p.rect(13,6,1,4,PAL.navy);
+      p.rect(4,3,3,1,PAL.navy); p.rect(9,3,3,1,PAL.navy);
+      p.rect(6,6,1,2,PAL.blue); p.rect(8,5,1,3,PAL.blue); p.rect(10,7,1,2,PAL.blue);
+      p.rect(4,10,8,2,PAL.hullDark);
+      p.rect(7,12,2,2,PAL.gold);
+    }
+    function drawCrew(){
+      p.clear();
+      var xs=[3,7,11], cs=[PAL.gold, PAL.blue, PAL.green];
+      for(var i=0;i<xs.length;i++){
+        p.rect(xs[i],4,2,2,PAL.skin);
+        p.rect(xs[i],6,2,4,cs[i]);
+        p.rect(xs[i],10,2,2,PAL.navy);
+      }
+    }
+
+    if(kind==='ears'){
+      if(prefersReduced){ drawEars(0); }
+      else {
+        var scene = { active:false, last:0, interval:1000/8, draw:function(now){ drawEars(now); } };
+        registerScene(scene);
+        var io = new IntersectionObserver(function(entries){ entries.forEach(function(e){ scene.active=e.isIntersecting; }); }, {threshold:0});
+        io.observe(canvas);
+        document.addEventListener('visibilitychange', function(){ scene.active = scene.active && !document.hidden; });
+      }
+    } else if(kind==='brain'){ drawBrain(); }
+    else if(kind==='crew'){ drawCrew(); }
+  });
+})();
+
+/* ============================================================
+   "WHY SAILR" COMPARISON: scripted, looping, pausable
+   ============================================================ */
+(function(){
+  var root = document.getElementById('compare');
+  if(!root) return;
+
+  var noteTypedTxt = root.querySelector('#noteTyped .txt');
+  var noteTypedLine = document.getElementById('noteTyped');
+  var noteBullets = document.querySelectorAll('#noteBullets li');
+  var noteStamp = document.getElementById('noteStamp');
+  var logTypedTxt = root.querySelector('#logTyped .txt');
+  var logTypedLine = document.getElementById('logTyped');
+  var lookoutCard = document.getElementById('lookoutCard');
+  var slackCard = document.getElementById('slackCard');
+  var slackTag = document.getElementById('slackTag');
+  var sendBtn = document.getElementById('sendBtn');
+  var cursor = document.getElementById('pixelCursor');
+  var sailStamp = document.getElementById('sailStamp');
+
+  var LINE = '"...can you check what we quoted Acme last time?"';
+
+  function resetDOM(){
+    noteTypedTxt.textContent=''; noteTypedLine.classList.remove('done');
+    logTypedTxt.textContent=''; logTypedLine.classList.remove('done');
+    noteBullets.forEach(function(li){ li.classList.remove('show'); });
+    noteStamp.classList.remove('show');
+    lookoutCard.classList.remove('show');
+    slackCard.classList.remove('show');
+    slackTag.textContent = 'Send · needs a nod';
+    slackTag.classList.remove('sent'); slackTag.classList.add('send');
+    sendBtn.classList.remove('clicked');
+    cursor.style.opacity = 0; cursor.style.left='140px'; cursor.style.top='-20px';
+    sailStamp.classList.remove('show');
+  }
+
+  function typeText(el, txt, speed, myToken, getToken){
+    return new Promise(function(resolve){
+      var i=0;
+      (function step(){
+        if(myToken !== getToken()){ resolve(); return; }
+        el.textContent = txt.slice(0,i);
+        if(i>=txt.length){ resolve(); return; }
+        i++;
+        setTimeout(step, speed);
+      })();
+    });
+  }
+
+  var token = 0;
+  function getToken(){ return token; }
+
+  function renderStatic(){
+    resetDOM();
+    noteTypedTxt.textContent = LINE; noteTypedLine.classList.add('done');
+    logTypedTxt.textContent = LINE; logTypedLine.classList.add('done');
+    noteBullets.forEach(function(li){ li.classList.add('show'); });
+    noteStamp.classList.add('show');
+    lookoutCard.classList.add('show');
+    slackCard.classList.add('show');
+    slackTag.textContent = 'Sent, verified.';
+    slackTag.classList.remove('send'); slackTag.classList.add('sent');
+    sailStamp.classList.add('show');
+  }
+
+  async function playOnce(my){
+    resetDOM();
+    await Promise.all([
+      typeText(noteTypedTxt, LINE, 26, my, getToken),
+      typeText(logTypedTxt, LINE, 26, my, getToken)
+    ]);
+    if(my!==token) return;
+    noteTypedLine.classList.add('done'); logTypedLine.classList.add('done');
+
+    await wait(350); if(my!==token) return;
+    lookoutCard.classList.add('show');
+
+    await wait(300); if(my!==token) return;
+    noteBullets[0].classList.add('show');
+    await wait(500); if(my!==token) return;
+    noteBullets[1].classList.add('show');
+    await wait(500); if(my!==token) return;
+    noteBullets[2].classList.add('show');
+
+    await wait(500); if(my!==token) return;
+    noteStamp.classList.add('show');
+
+    await wait(600); if(my!==token) return;
+    slackCard.classList.add('show');
+
+    await wait(900); if(my!==token) return;
+    var btnRect = sendBtn.getBoundingClientRect();
+    var cardRect = slackCard.getBoundingClientRect();
+    cursor.style.opacity = 1;
+    cursor.style.left = (btnRect.left - cardRect.left + btnRect.width + 6) + 'px';
+    cursor.style.top = (btnRect.top - cardRect.top - 8) + 'px';
+    await wait(150); if(my!==token) return;
+    cursor.style.left = (btnRect.left - cardRect.left + btnRect.width/2) + 'px';
+    cursor.style.top = (btnRect.top - cardRect.top + btnRect.height/2) + 'px';
+
+    await wait(600); if(my!==token) return;
+    sendBtn.classList.add('clicked');
+    await wait(200); if(my!==token) return;
+    slackTag.textContent = 'Sent, verified.';
+    slackTag.classList.remove('send'); slackTag.classList.add('sent');
+    cursor.style.opacity = 0;
+
+    await wait(500); if(my!==token) return;
+    sailStamp.classList.add('show');
+
+    await wait(2200);
+  }
+
+  async function loop(my){
+    while(my===token){
+      await playOnce(my);
+      if(my!==token) return;
+      await wait(900);
+    }
+  }
+
+  function start(){ token++; var my=token; loop(my); }
+  function stop(){ token++; }
+
+  if(prefersReduced){
+    renderStatic();
+  } else if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ start(); } else { stop(); }
+      });
+    }, { threshold:0.25 });
+    io.observe(root);
+  } else {
+    start();
+  }
+})();
+
+/* ============================================================
+   FILM: graceful fallback if the trailer mp4 is missing
+   ============================================================ */
+(function(){
+  var video = document.getElementById('trailerVideo');
+  var fallback = document.getElementById('filmFallback');
+  if(!video || !fallback) return;
+  function showFallback(){ video.hidden = true; fallback.hidden = false; }
+  video.addEventListener('error', showFallback, true);
+  var src = video.querySelector('source');
+  if(src) src.addEventListener('error', showFallback, true);
+  // Missing-file detection rides the error events above; polling networkState
+  // on a timer is racy (headless/offscreen media defers source selection).
+  setTimeout(function(){
+    if(video.error){ showFallback(); }
+  }, 1200);
+})();
+
+})();
+</script>
+</body>
+</html>

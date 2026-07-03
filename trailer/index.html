@@ -1,0 +1,1064 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sailr: the crew that works while you talk</title>
+<style>
+  @font-face{ font-family:'Outfit'; src:url('../assets/fonts/Outfit-Regular.ttf') format('truetype'); font-weight:400; font-style:normal; font-display:block; }
+  @font-face{ font-family:'Outfit'; src:url('../assets/fonts/Outfit-Medium.ttf') format('truetype'); font-weight:500; font-style:normal; font-display:block; }
+  @font-face{ font-family:'Outfit'; src:url('../assets/fonts/Outfit-SemiBold.ttf') format('truetype'); font-weight:600; font-style:normal; font-display:block; }
+  @font-face{ font-family:'Outfit'; src:url('../assets/fonts/Outfit-Bold.ttf') format('truetype'); font-weight:700; font-style:normal; font-display:block; }
+
+  :root{
+    --navy:#082850; --blue:#0061FF; --sky:#EAF2FB; --green:#00B368; --green-text:#0A7A47;
+    --slate:#5A7184; --border:#DAE4EF; --gold:#FFC400; --red:#E4002B;
+    --hull-dark:#041838; --water-dark:#1f4fc0; --water-mid:#3f74e8; --sun-glow:#FFE08A;
+    --sail-white:#f4f8ff; --sail-shade:#d7e4fb; --rig:#3a567f;
+    --parch-page:#F3E6C4; --parch-line:#D9C593; --parch-ink:#14346B; --parch-label:#6E5520;
+    --px:4px;
+    --mono:"SF Mono", Menlo, monospace;
+    --serif:"Iowan Old Style", Georgia, serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:#000; overflow:hidden; }
+  #page{ position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; }
+  #stage{
+    width:1920px; height:1080px; position:relative; background:#000; overflow:hidden;
+    transform-origin:center center; font-family:'Outfit',system-ui,sans-serif;
+  }
+  .shot{ position:absolute; inset:0; opacity:0; overflow:hidden; }
+  canvas.pix{
+    position:absolute; inset:0; width:100%; height:100%; display:block;
+    image-rendering:pixelated; image-rendering:crisp-edges;
+  }
+  #fadeOverlay{ position:absolute; inset:0; background:var(--navy); opacity:0; pointer-events:none; z-index:1000; }
+
+  /* ---------- generic pixel chrome ---------- */
+  .pwin{
+    background:#fff; border:var(--px) solid var(--navy);
+    box-shadow:
+      0 0 0 var(--px) #fff,
+      0 0 0 calc(var(--px)*2) var(--border),
+      0 var(--px) 0 calc(var(--px)*2) var(--navy),
+      12px 20px 0 0 rgba(0,0,0,.35);
+  }
+  .mono{ font-family:var(--mono); }
+  .serif{ font-family:var(--serif); }
+
+  .tagpill{
+    display:inline-flex; align-items:center; gap:10px; font-family:var(--mono); font-weight:700;
+    font-size:17px; letter-spacing:.12em; text-transform:uppercase; padding:8px 16px;
+    border:var(--px) solid var(--border); background:#fff; color:var(--slate);
+  }
+  .tagpill.read{ color:var(--green-text); border-color:var(--green); }
+  .tagpill.send{ color:var(--blue); border-color:var(--blue); }
+  .tagpill.done{ color:#fff; background:var(--green); border-color:var(--navy); }
+  .tagpill.task{ color:var(--navy); background:var(--gold); border-color:var(--navy); }
+
+  .acard{ background:#fff; border:var(--px) solid var(--navy); box-shadow:0 var(--px) 0 0 var(--border), 8px 14px 0 0 rgba(0,0,0,.25); }
+  .acard-top{ display:flex; align-items:center; gap:14px; padding:20px 26px; border-bottom:var(--px) solid var(--border); font-size:30px; font-weight:700; color:var(--navy); }
+  .acard-top .ico{ width:34px; height:34px; flex:none; }
+  .acard-top .sp{ flex:1; }
+  .acard-body{ padding:24px 26px 28px; }
+  .acard-line{ font-size:26px; font-weight:600; color:var(--navy); }
+  .acard-sub{ margin-top:10px; font-size:24px; color:var(--slate); font-weight:500; }
+  .acard-dm{ margin:0 26px 26px; background:var(--sky); border:var(--px) solid var(--border); padding:18px 20px; font-size:24px; line-height:1.5; color:var(--navy); }
+  .acard-dm .to{ font-weight:800; display:block; margin-bottom:4px; font-size:18px; letter-spacing:.06em; text-transform:uppercase; color:var(--slate); }
+
+  .monotag{ font-family:var(--mono); font-weight:700; font-size:30px; letter-spacing:.02em; color:var(--sky); }
+  .monotag .dot{ color:var(--blue); }
+  /* a small translucent chip for captions that sit alone over a scene (not
+     docked under a card), instead of bare mono text floating at a stage corner */
+  .monotag.chip{
+    display:inline-block; background:rgba(4,24,56,.6); border:2px solid rgba(255,255,255,.16);
+    padding:16px 24px; color:#fff; font-size:28px;
+  }
+
+  .btn-pixel{
+    appearance:none; cursor:default; font-family:'Outfit'; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--navy); background:#fff; border:var(--px) solid var(--navy);
+    box-shadow:0 var(--px) 0 0 var(--navy), 0 calc(var(--px)*2) 0 0 var(--border);
+    display:inline-flex; align-items:center; justify-content:center; gap:14px;
+    position:relative; transition:none;
+  }
+  .btn-pixel.pressed{ transform:translateY(var(--px)); box-shadow:0 0 0 0 var(--navy); }
+  .btn-pixel.blue{ background:var(--blue); color:#fff; border-color:var(--navy); }
+  .btn-pixel.blue.pressed{ box-shadow:0 0 0 0; }
+
+  .cursor{ position:absolute; width:40px; height:52px; z-index:50; pointer-events:none; filter:drop-shadow(3px 4px 0 rgba(0,0,0,.35)); }
+
+  .buoyrow{ display:flex; gap:34px; }
+  .buoy{
+    width:82px; height:82px; border:var(--px) solid var(--navy); background:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--mono);
+    font-weight:800; font-size:32px; color:var(--slate); position:relative;
+  }
+  .buoy.active{ background:var(--gold); color:var(--navy); box-shadow:0 0 0 14px rgba(255,196,0,.32); }
+  .buoy.done{ background:var(--green); color:#fff; border-color:var(--navy); }
+
+  .kicker{ font-family:var(--mono); font-weight:700; font-size:22px; letter-spacing:.16em; text-transform:uppercase; color:var(--slate); }
+
+  .accent-blue{ color:var(--blue); }
+  .accent-green{ color:var(--green); }
+</style>
+</head>
+<body>
+<div id="page">
+  <div id="stage">
+
+    <!-- ============ 1. COLD OPEN 0.0-4.0 ============ -->
+    <div class="shot" id="s-cold-open" style="background:#051B38;">
+      <div id="co-window" class="pwin" style="position:absolute; left:660px; top:280px; width:600px; overflow:hidden;">
+        <div style="display:flex; align-items:center; gap:10px; padding:14px 20px; background:#e7e9ec; border-bottom:var(--px) solid var(--navy);">
+          <div style="width:14px;height:14px;background:#ff5f57;border:2px solid #97302a;"></div>
+          <div style="width:14px;height:14px;background:#febc2e;border:2px solid #9a7217;"></div>
+          <div style="width:14px;height:14px;background:#28c840;border:2px solid #17862a;"></div>
+          <div style="flex:1;"></div>
+          <canvas id="co-clock" class="pix" width="60" height="60" style="position:static; width:34px;height:34px;"></canvas>
+        </div>
+        <div style="background:#fff; padding:30px 34px 40px;">
+          <div class="kicker" id="co-kicker" style="opacity:0;">MEETING NOTES</div>
+          <div style="margin-top:22px; display:flex; flex-direction:column; gap:14px; font-family:'Outfit'; font-weight:500; font-size:27px; color:var(--slate);">
+            <div id="co-b1">&nbsp;</div>
+            <div id="co-b2">&nbsp;</div>
+            <div id="co-b3">&nbsp;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 2. LINE A 4.0-5.4 ============ -->
+    <div class="shot" id="s-line-a" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:96px; color:#fff; text-align:center; line-height:1.15;">
+        <span class="kt-word" data-i="0">Notes</span>
+        <span class="kt-word" data-i="1">don&#8217;t</span>
+        <span class="kt-word accent-blue" data-i="2">send</span>
+        <span class="kt-word" data-i="3">emails.</span>
+      </div>
+    </div>
+
+    <!-- ============ 3. LINE B 5.5-7.0 ============ -->
+    <div class="shot" id="s-line-b" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:96px; color:#fff; text-align:center; line-height:1.15;">
+        <span class="kt-word" data-i="0">Notes</span>
+        <span class="kt-word" data-i="1">don&#8217;t</span>
+        <span class="kt-word accent-blue" data-i="2">book</span>
+        <span class="kt-word" data-i="3">calls.</span>
+      </div>
+    </div>
+
+    <!-- ============ 4. REVEAL STING 7.0-9.0 ============ -->
+    <div class="shot" id="s-reveal">
+      <canvas id="cv-reveal" class="pix" width="1920" height="1080"></canvas>
+      <div id="reveal-panel" class="pwin" style="position:absolute; left:50%; top:50%; width:520px; padding:56px 40px; display:flex; align-items:center; justify-content:center; opacity:0;">
+        <svg viewBox="0 0 102 58" style="width:100%; height:auto; display:block;">
+          <path fill="#082850" d="M13.11 46.506C10.3807 46.506 8.004 46.092 5.98 45.264C3.98667 44.436 2.162 43.1327 0.506 41.354L5.704 36.11C6.83867 37.306 8.05 38.226 9.338 38.87C10.626 39.4833 12.0827 39.79 13.708 39.79C15.088 39.79 16.146 39.56 16.882 39.1C17.6487 38.6093 18.032 37.95 18.032 37.122C18.032 36.3553 17.756 35.7267 17.204 35.236C16.652 34.7147 15.916 34.27 14.996 33.902C14.1067 33.5033 13.11 33.1353 12.006 32.798C10.9327 32.43 9.844 32.0007 8.74 31.51C7.66667 30.9887 6.67 30.36 5.75 29.624C4.86067 28.888 4.14 27.968 3.588 26.864C3.036 25.76 2.76 24.3953 2.76 22.77C2.76 20.6847 3.25067 18.906 4.232 17.434C5.244 15.962 6.63933 14.8273 8.418 14.03C10.1967 13.2327 12.2667 12.834 14.628 12.834C16.9893 12.834 19.1667 13.2327 21.16 14.03C23.1533 14.8273 24.794 15.9313 26.082 17.342L20.838 22.54C19.8567 21.5587 18.86 20.8227 17.848 20.332C16.836 19.8413 15.732 19.596 14.536 19.596C13.4013 19.596 12.512 19.7953 11.868 20.194C11.224 20.5927 10.902 21.16 10.902 21.896C10.902 22.632 11.178 23.23 11.73 23.69C12.282 24.15 13.0027 24.564 13.892 24.932C14.812 25.2693 15.8087 25.622 16.882 25.99C17.986 26.358 19.0747 26.7873 20.148 27.278C21.2213 27.7687 22.2027 28.3973 23.092 29.164C24.012 29.9307 24.748 30.8967 25.3 32.062C25.852 33.2273 26.128 34.638 26.128 36.294C26.128 39.5447 24.978 42.0593 22.678 43.838C20.4087 45.6167 17.2193 46.506 13.11 46.506ZM39.0874 46.46C37.0021 46.46 35.1468 45.954 33.5214 44.942C31.8961 43.93 30.6234 42.55 29.7034 40.802C28.7834 39.0233 28.3234 37.0147 28.3234 34.776C28.3234 32.5067 28.7834 30.4827 29.7034 28.704C30.6234 26.9253 31.8961 25.5453 33.5214 24.564C35.1468 23.552 37.0021 23.046 39.0874 23.046C40.4981 23.046 41.7861 23.3067 42.9514 23.828C44.1168 24.3187 45.0674 25.024 45.8034 25.944C46.5701 26.864 47.0301 27.9067 47.1834 29.072V40.388C47.0301 41.584 46.5701 42.642 45.8034 43.562C45.0674 44.4513 44.1168 45.1567 42.9514 45.678C41.7861 46.1993 40.4981 46.46 39.0874 46.46ZM40.7894 39.33C42.1081 39.33 43.1661 38.9007 43.9634 38.042C44.7914 37.1833 45.2054 36.0793 45.2054 34.73C45.2054 33.8407 45.0214 33.0587 44.6534 32.384C44.2854 31.7093 43.7641 31.1727 43.0894 30.774C42.4454 30.3753 41.6941 30.176 40.8354 30.176C39.9768 30.176 39.2101 30.3753 38.5354 30.774C37.8914 31.1727 37.3701 31.7247 36.9714 32.43C36.6034 33.1047 36.4194 33.8713 36.4194 34.73C36.4194 35.6193 36.6034 36.4167 36.9714 37.122C37.3394 37.7967 37.8608 38.3333 38.5354 38.732C39.2101 39.1307 39.9614 39.33 40.7894 39.33ZM44.8834 46V39.974L46.0334 34.454L44.8834 29.026V23.506H52.7494V46H44.8834ZM57.4202 46V23.506H65.4242V46H57.4202ZM70.1331 46V12.466H78.1371V46H70.1331ZM82.846 46V23.506H90.85V46H82.846ZM90.85 33.764L87.262 30.728C88.1513 28.1827 89.332 26.266 90.804 24.978C92.276 23.69 94.1927 23.046 96.554 23.046C97.6273 23.046 98.5473 23.184 99.314 23.46C100.111 23.736 100.786 24.1653 101.338 24.748L96.692 30.958C96.4467 30.682 96.094 30.4673 95.634 30.314C95.2047 30.13 94.714 30.038 94.162 30.038C93.1193 30.038 92.3067 30.36 91.724 31.004C91.1413 31.6173 90.85 32.5373 90.85 33.764Z"/>
+          <path fill="#0061FF" d="M61.66 5.93201C67.939 8.34701 69.388 14.626 67.939 21.388H55.381L61.66 5.93201Z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ============ 5. CAST OFF 9.0-14.0 ============ -->
+    <div class="shot" id="s-castoff">
+      <canvas id="cv-castoff" class="pix" width="1920" height="1080"></canvas>
+      <button id="sail-btn" class="btn-pixel" style="position:absolute; left:50%; bottom:150px; transform:translateX(-50%); font-size:34px; padding:26px 54px;">
+        <svg viewBox="0 0 15 15" style="width:30px;height:30px;">
+          <g fill="#0061FF"><rect x="6" y="1" width="3" height="2"/><rect x="6" y="3" width="6" height="2"/><rect x="6" y="5" width="6" height="2"/><rect x="6" y="7" width="6" height="2"/></g>
+          <rect x="6" y="1" width="2" height="12" fill="#082850"/>
+        </svg>
+        Sail
+      </button>
+      <svg id="co-cursor1" class="cursor" viewBox="0 0 12 16" style="opacity:0;">
+        <polygon points="1,1 1,13 4.5,10 7,15 9,14 6.5,9 11,9" fill="#082850"/>
+        <polygon points="2,3 2,11 4.2,9.2 6.2,13.4 7.4,12.8 5.4,8.6 8.6,8.6" fill="#ffffff"/>
+      </svg>
+      <div id="castoff-tag" class="monotag chip" style="position:absolute; left:90px; bottom:90px; opacity:0;">You hit Sail. It listens. On your Mac.</div>
+    </div>
+
+    <!-- ============ 6. TASKS MID-SENTENCE 14.0-20.0 ============ -->
+    <div class="shot" id="s-tasks" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="position:relative; width:1600px; height:260px; background:var(--parch-page); border:3px solid #b99a5e; box-shadow:0 18px 0 0 rgba(0,0,0,.25); padding:0 70px; display:flex; flex-direction:column; justify-content:center; gap:40px;">
+        <div style="position:absolute; inset:0 70px; pointer-events:none; opacity:.55; background:repeating-linear-gradient(#0000 0 43.3px, var(--parch-line) 43.3px 46.3px);"></div>
+        <div style="position:relative; display:flex; align-items:baseline; gap:26px;">
+          <div id="tk-line1" class="serif" style="font-size:38px; color:var(--parch-ink); white-space:nowrap; overflow:hidden;">&nbsp;</div>
+          <div id="tk-flag1" class="tagpill task" style="opacity:0; white-space:nowrap;">TASK &middot; LOOKOUT</div>
+        </div>
+        <div style="position:relative; display:flex; align-items:baseline; gap:26px;">
+          <div id="tk-line2" class="serif" style="font-size:38px; color:var(--parch-ink); white-space:nowrap; overflow:hidden;">&nbsp;</div>
+          <div id="tk-flag2" class="tagpill task" style="opacity:0; white-space:nowrap;">TASK &middot; SLACK</div>
+        </div>
+      </div>
+      <div id="tk-caption" class="monotag" style="position:absolute; left:160px; bottom:110px; opacity:0;">It catches tasks as they are said.</div>
+    </div>
+
+    <!-- ============ 7-16. CREW RHYTHM BUILD 20.0-34.0 ============ -->
+    <div class="shot" id="s-card1" style="background:var(--navy);">
+      <div id="c1-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
+        <div class="acard-top">
+          <svg class="ico" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="#0061FF" stroke-width="1.4"/><rect x="2" y="7.4" width="12" height="1.2" fill="#0061FF"/><polygon points="8,2.5 10,8 8,13.5 6,8" fill="none" stroke="#0061FF" stroke-width="1"/></svg>
+          <div class="sp">Lookout checked the Acme quote</div>
+          <div class="tagpill read">Read &middot; Done</div>
+        </div>
+        <div class="acard-body"><div class="acard-line">$18,400 on the March order.</div></div>
+      </div>
+      <div id="c1-tag" class="monotag" style="position:absolute;"><span class="accent-green">Found it.</span></div>
+    </div>
+
+    <div class="shot" id="s-card2" style="background:var(--navy);">
+      <div id="c2-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
+        <div class="acard-top">
+          <svg class="ico" viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="10" fill="#00B368"/><rect x="2" y="4" width="12" height="3" fill="#082850"/><rect x="4.5" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="10" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="4" y="8.5" width="2" height="2" fill="#fff"/><rect x="7" y="8.5" width="2" height="2" fill="#fff"/><rect x="10" y="8.5" width="2" height="2" fill="#fff"/><rect x="4" y="11.2" width="2" height="2" fill="#FFC400"/><rect x="7" y="11.2" width="2" height="2" fill="#fff"/></svg>
+          <div class="sp">Calendar read: Thursday is open</div>
+          <div class="tagpill read">Read &middot; Done</div>
+        </div>
+        <div class="acard-body"><div class="acard-line">No conflicts before 4:00 PM.</div></div>
+      </div>
+      <div id="c2-tag" class="monotag" style="position:absolute;"><span class="accent-green">Checked.</span></div>
+    </div>
+
+    <div class="shot" id="s-card3" style="background:var(--navy);">
+      <div id="c3-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
+        <div class="acard-top">
+          <svg class="ico" viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" fill="#0061FF"/><rect x="1.5" y="3.5" width="13" height="2.2" fill="#fff"/><polygon points="1.5,3.5 8,8.5 14.5,3.5" fill="#CFE0FB"/></svg>
+          <div class="sp">Draft to Dana ready</div>
+          <div class="tagpill send">Draft &middot; Ready</div>
+        </div>
+        <div class="acard-dm">&#8220;Deck attached, and the March quote was $18,400&#8230;&#8221;</div>
+      </div>
+      <div id="c3-tag" class="monotag" style="position:absolute;"><span class="accent-blue">Drafted.</span></div>
+    </div>
+
+    <div class="shot" id="s-card4" style="background:var(--navy);">
+      <div id="c4-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
+        <div class="acard-top">
+          <svg class="ico" viewBox="0 0 16 16"><rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/></svg>
+          <div class="sp">Slack Sam the timeline</div>
+          <div class="tagpill send">Send &middot; Needs a nod</div>
+        </div>
+        <div class="acard-dm"><span class="to">DM &rarr; Sam</span>&#8220;Sam, can you sanity-check the rollout timeline tomorrow AM?&#8221;</div>
+      </div>
+      <div id="c4-tag" class="monotag" style="position:absolute;"><span class="accent-blue">Racked up.</span></div>
+    </div>
+
+    <div class="shot" id="s-breath1">
+      <canvas id="cv-breath1" class="pix" width="1920" height="1080"></canvas>
+    </div>
+
+    <div class="shot" id="s-chart1" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:40px;">
+      <div class="kicker" style="color:var(--gold);">THE CHART</div>
+      <div style="background:var(--parch-page); border:3px solid #b99a5e; padding:38px 60px; display:flex; align-items:center; justify-content:center;">
+        <div class="buoyrow" id="chart-buoys">
+          <div class="buoy" data-n="1">1</div>
+          <div class="buoy" data-n="2">2</div>
+          <div class="buoy" data-n="3">3</div>
+          <div class="buoy" data-n="4">4</div>
+        </div>
+      </div>
+      <div class="monotag">The chart keeps the voyage.</div>
+    </div>
+
+    <div class="shot" id="s-logbook" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:44px;">
+      <div id="lb-wrap" style="position:relative; width:820px; height:340px;">
+        <div style="position:absolute; inset:0; display:flex; background:#0e2c54; border:var(--px) solid var(--navy); box-shadow:0 var(--px) 0 0 var(--hull-dark); perspective:1400px;">
+          <div style="position:relative; flex:1; margin:14px 2px 14px 14px; background:var(--parch-page); border:3px solid #cdb482; padding:20px 24px; overflow:hidden;">
+            <div style="position:absolute; inset:16px 20px; pointer-events:none; opacity:.6; background:repeating-linear-gradient(#0000 0 30px, #d8c290 30px 32px);"></div>
+            <div class="serif" style="position:relative; font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#8a6f3a; font-weight:700; margin-bottom:8px;">&#9875; Captain&#8217;s Log</div>
+            <div class="serif" style="position:relative; font-size:19px; line-height:30px; color:#1c3a63;">Calendar read: Thu open.<br>Acme quote: $18,400.<br>Slack drafted for Sam.</div>
+          </div>
+          <div style="position:absolute; left:50%; top:0; bottom:0; width:6px; transform:translateX(-50%); z-index:4; background:repeating-linear-gradient(180deg,var(--navy) 0 3px,#12386a 3px 6px);"></div>
+          <div style="position:relative; flex:1; margin:14px 14px 14px 2px; background:var(--parch-page); border:3px solid #cdb482; padding:20px 24px; overflow:hidden;">
+            <div style="position:absolute; inset:16px 20px; pointer-events:none; opacity:.6; background:repeating-linear-gradient(#0000 0 30px, #d8c290 30px 32px);"></div>
+            <div class="serif" style="position:relative; font-size:19px; line-height:30px; color:#1c3a63;">Dana&#8217;s deck sent.<br>Event held, Thu 2:00.<br>Fall term starts Aug 12.</div>
+          </div>
+          <div id="lb-flip" style="position:absolute; top:14px; bottom:14px; left:50%; width:calc(50% - 16px); background:var(--parch-page); border:3px solid #cdb482; z-index:5; transform-origin:left center; backface-visibility:hidden; box-shadow:0 0 20px rgba(0,0,0,.35); padding:20px 24px; overflow:hidden;">
+            <div class="serif" style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#8a6f3a; font-weight:700; margin-bottom:8px;">&#9875; Captain&#8217;s Log</div>
+            <div class="serif" style="font-size:19px; line-height:30px; color:#1c3a63;">Calendar read: Thu open.<br>Acme quote: $18,400.<br>Slack drafted for Sam.</div>
+          </div>
+        </div>
+      </div>
+      <div class="monotag">The log writes itself.</div>
+    </div>
+
+    <div class="shot" id="s-card5" style="background:var(--navy);">
+      <div id="c5-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
+        <div class="acard-top">
+          <svg class="ico" viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="10" fill="#00B368"/><rect x="2" y="4" width="12" height="3" fill="#082850"/><rect x="4.5" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="10" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="4" y="8.5" width="2" height="2" fill="#fff"/><rect x="7" y="8.5" width="2" height="2" fill="#fff"/><rect x="10" y="8.5" width="2" height="2" fill="#fff"/></svg>
+          <div class="sp">Event held for Thu 2:00</div>
+          <div class="tagpill send">Waits for your nod</div>
+        </div>
+        <div class="acard-body"><div class="acard-line">On Dana&#8217;s calendar, Thu 2:00 PM.</div></div>
+      </div>
+    </div>
+
+    <div class="shot" id="s-card6" style="background:var(--navy);">
+      <div id="c6-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
+        <div class="acard-top">
+          <svg class="ico" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="#0061FF" stroke-width="1.4"/><rect x="2" y="7.4" width="12" height="1.2" fill="#0061FF"/><polygon points="8,2.5 10,8 8,13.5 6,8" fill="none" stroke="#0061FF" stroke-width="1"/></svg>
+          <div class="sp">Lookout: Acme fall term starts Aug 12</div>
+          <div class="tagpill read">Read &middot; Done</div>
+        </div>
+        <div class="acard-body"><div class="acard-line">Starts August 12.</div></div>
+      </div>
+    </div>
+
+    <div class="shot" id="s-breath2">
+      <canvas id="cv-breath2" class="pix" width="1920" height="1080"></canvas>
+    </div>
+
+    <!-- ============ 17. THE NOD 34.0-39.0 ============ -->
+    <div class="shot" id="s-nod" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:50px;">
+      <div id="nod-card" class="acard" style="width:980px;">
+        <div class="acard-top">
+          <svg class="ico" viewBox="0 0 16 16"><rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/></svg>
+          <div class="sp">Slack Sam the timeline</div>
+          <div id="nod-tag" class="tagpill send">Send &middot; Needs a nod</div>
+        </div>
+        <div class="acard-dm" style="font-size:28px;"><span class="to">DM &rarr; Sam</span>&#8220;Sam, can you sanity-check the rollout timeline tomorrow AM?&#8221;</div>
+        <div style="display:flex; gap:20px; padding:0 26px 30px;">
+          <button id="nod-btn" class="btn-pixel blue" style="flex:1; font-size:26px; padding:20px;">Send it</button>
+          <div id="nod-sparkle" style="position:relative; width:0;"></div>
+        </div>
+      </div>
+      <div class="monotag" style="color:var(--sky); font-weight:500; font-size:34px; font-family:'Outfit';">Every send waits for your nod.</div>
+      <svg id="nod-cursor" class="cursor" viewBox="0 0 12 16" style="opacity:0;">
+        <polygon points="1,1 1,13 4.5,10 7,15 9,14 6.5,9 11,9" fill="#082850"/>
+        <polygon points="2,3 2,11 4.2,9.2 6.2,13.4 7.4,12.8 5.4,8.6 8.6,8.6" fill="#ffffff"/>
+      </svg>
+    </div>
+
+    <!-- ============ 18-23. PAYOFF BURST 39.0-46.0 ============ -->
+    <div class="shot" id="s-pay1" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div id="pay1-pill" class="tagpill done" style="font-size:44px; padding:22px 44px;">Sent, verified.</div>
+      <div class="monotag" style="position:absolute; left:90px; bottom:110px;"><span class="accent-green">Sent.</span></div>
+    </div>
+
+    <div class="shot" id="s-pay2" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;">
+      <div style="display:grid; grid-template-columns:repeat(7,90px); gap:8px;">
+        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">MON</div>
+        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">TUE</div>
+        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">WED</div>
+        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--gold); font-weight:700;">THU</div>
+        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">FRI</div>
+        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">SAT</div>
+        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">SUN</div>
+      </div>
+      <div id="pay2-grid" style="display:grid; grid-template-columns:repeat(7,90px); gap:8px;"></div>
+      <div class="monotag" style="position:relative; margin-top:14px;"><span class="accent-green">Booked.</span></div>
+    </div>
+
+    <div class="shot" id="s-pay3" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <div class="kicker" style="margin-bottom:26px; width:760px; text-align:left;">TIDY UP</div>
+      <div id="pay3-lines" style="display:flex; flex-direction:column; gap:16px; font-size:32px; font-weight:600; color:#fff; width:760px;">
+        <div class="p3l" style="opacity:0;">Recap ready.</div>
+        <div class="p3l" style="opacity:0;">3 tasks done.</div>
+        <div class="p3l" style="opacity:0;">Dana notified.</div>
+        <div class="p3l" style="opacity:0;">Sam pinged.</div>
+      </div>
+      <div class="monotag" style="position:absolute; left:90px; bottom:110px;"><span class="accent-green">Wrapped.</span></div>
+    </div>
+
+    <div class="shot" id="s-pay4" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:34px;">
+      <div class="kicker" style="color:var(--gold);">THE CHART</div>
+      <div style="background:var(--parch-page); border:3px solid #b99a5e; padding:34px 54px;">
+        <div class="buoyrow">
+          <div class="buoy done">1</div>
+          <div class="buoy done">2</div>
+          <div class="buoy done">3</div>
+          <div class="buoy done">4</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shot" id="s-pay5">
+      <canvas id="cv-pay5" class="pix" width="1920" height="1080"></canvas>
+    </div>
+
+    <div class="shot" id="s-pay6" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div id="pay6-stack" style="position:relative; width:760px; height:420px;">
+        <div class="p6card acard" style="position:absolute; left:0; top:0; width:760px; padding:0;">
+          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Calendar checked</div><div class="tagpill read">Read &middot; Done</div></div>
+        </div>
+        <div class="p6card acard" style="position:absolute; left:30px; top:80px; width:760px; padding:0;">
+          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Acme quote pulled</div><div class="tagpill read">Read &middot; Done</div></div>
+        </div>
+        <div class="p6card acard" style="position:absolute; left:60px; top:160px; width:760px; padding:0;">
+          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Fall term dates found</div><div class="tagpill read">Read &middot; Done</div></div>
+        </div>
+        <div class="p6card acard" style="position:absolute; left:90px; top:240px; width:760px; padding:0;">
+          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Timeline sanity-checked</div><div class="tagpill read">Read &middot; Done</div></div>
+        </div>
+      </div>
+      <div class="monotag" style="position:absolute; left:90px; bottom:110px;"><span class="accent-green">Done.</span></div>
+    </div>
+
+    <!-- ============ 24. QUIET BEAT 46.0-49.0 ============ -->
+    <div class="shot" id="s-quiet">
+      <canvas id="cv-quiet" class="pix" width="1920" height="1080"></canvas>
+    </div>
+
+    <!-- ============ 25. TAGLINE 49.0-53.0 ============ -->
+    <div class="shot" id="s-tagline" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div id="tagline-text" style="font-weight:700; font-size:120px; color:#fff; opacity:0;">Not notes. <span style="color:#00B368;">Done.</span></div>
+    </div>
+
+    <!-- ============ 26. END CARD 53.0-60.0 ============ -->
+    <div class="shot" id="s-endcard" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <div id="end-panel" class="pwin" style="width:300px; padding:40px 30px; opacity:0;">
+        <svg viewBox="0 0 102 58" style="width:100%; height:auto; display:block;">
+          <path fill="#082850" d="M13.11 46.506C10.3807 46.506 8.004 46.092 5.98 45.264C3.98667 44.436 2.162 43.1327 0.506 41.354L5.704 36.11C6.83867 37.306 8.05 38.226 9.338 38.87C10.626 39.4833 12.0827 39.79 13.708 39.79C15.088 39.79 16.146 39.56 16.882 39.1C17.6487 38.6093 18.032 37.95 18.032 37.122C18.032 36.3553 17.756 35.7267 17.204 35.236C16.652 34.7147 15.916 34.27 14.996 33.902C14.1067 33.5033 13.11 33.1353 12.006 32.798C10.9327 32.43 9.844 32.0007 8.74 31.51C7.66667 30.9887 6.67 30.36 5.75 29.624C4.86067 28.888 4.14 27.968 3.588 26.864C3.036 25.76 2.76 24.3953 2.76 22.77C2.76 20.6847 3.25067 18.906 4.232 17.434C5.244 15.962 6.63933 14.8273 8.418 14.03C10.1967 13.2327 12.2667 12.834 14.628 12.834C16.9893 12.834 19.1667 13.2327 21.16 14.03C23.1533 14.8273 24.794 15.9313 26.082 17.342L20.838 22.54C19.8567 21.5587 18.86 20.8227 17.848 20.332C16.836 19.8413 15.732 19.596 14.536 19.596C13.4013 19.596 12.512 19.7953 11.868 20.194C11.224 20.5927 10.902 21.16 10.902 21.896C10.902 22.632 11.178 23.23 11.73 23.69C12.282 24.15 13.0027 24.564 13.892 24.932C14.812 25.2693 15.8087 25.622 16.882 25.99C17.986 26.358 19.0747 26.7873 20.148 27.278C21.2213 27.7687 22.2027 28.3973 23.092 29.164C24.012 29.9307 24.748 30.8967 25.3 32.062C25.852 33.2273 26.128 34.638 26.128 36.294C26.128 39.5447 24.978 42.0593 22.678 43.838C20.4087 45.6167 17.2193 46.506 13.11 46.506ZM39.0874 46.46C37.0021 46.46 35.1468 45.954 33.5214 44.942C31.8961 43.93 30.6234 42.55 29.7034 40.802C28.7834 39.0233 28.3234 37.0147 28.3234 34.776C28.3234 32.5067 28.7834 30.4827 29.7034 28.704C30.6234 26.9253 31.8961 25.5453 33.5214 24.564C35.1468 23.552 37.0021 23.046 39.0874 23.046C40.4981 23.046 41.7861 23.3067 42.9514 23.828C44.1168 24.3187 45.0674 25.024 45.8034 25.944C46.5701 26.864 47.0301 27.9067 47.1834 29.072V40.388C47.0301 41.584 46.5701 42.642 45.8034 43.562C45.0674 44.4513 44.1168 45.1567 42.9514 45.678C41.7861 46.1993 40.4981 46.46 39.0874 46.46ZM40.7894 39.33C42.1081 39.33 43.1661 38.9007 43.9634 38.042C44.7914 37.1833 45.2054 36.0793 45.2054 34.73C45.2054 33.8407 45.0214 33.0587 44.6534 32.384C44.2854 31.7093 43.7641 31.1727 43.0894 30.774C42.4454 30.3753 41.6941 30.176 40.8354 30.176C39.9768 30.176 39.2101 30.3753 38.5354 30.774C37.8914 31.1727 37.3701 31.7247 36.9714 32.43C36.6034 33.1047 36.4194 33.8713 36.4194 34.73C36.4194 35.6193 36.6034 36.4167 36.9714 37.122C37.3394 37.7967 37.8608 38.3333 38.5354 38.732C39.2101 39.1307 39.9614 39.33 40.7894 39.33ZM44.8834 46V39.974L46.0334 34.454L44.8834 29.026V23.506H52.7494V46H44.8834ZM57.4202 46V23.506H65.4242V46H57.4202ZM70.1331 46V12.466H78.1371V46H70.1331ZM82.846 46V23.506H90.85V46H82.846ZM90.85 33.764L87.262 30.728C88.1513 28.1827 89.332 26.266 90.804 24.978C92.276 23.69 94.1927 23.046 96.554 23.046C97.6273 23.046 98.5473 23.184 99.314 23.46C100.111 23.736 100.786 24.1653 101.338 24.748L96.692 30.958C96.4467 30.682 96.094 30.4673 95.634 30.314C95.2047 30.13 94.714 30.038 94.162 30.038C93.1193 30.038 92.3067 30.36 91.724 31.004C91.1413 31.6173 90.85 32.5373 90.85 33.764Z"/>
+          <path fill="#0061FF" d="M61.66 5.93201C67.939 8.34701 69.388 14.626 67.939 21.388H55.381L61.66 5.93201Z"/>
+        </svg>
+      </div>
+      <div id="end-subtitle" style="margin-top:36px; font-weight:500; font-size:30px; color:var(--sky); opacity:0;">The crew that works while you talk.</div>
+      <div id="end-github" class="mono" style="margin-top:22px; font-size:20px; color:var(--slate); opacity:0;">github.com/jii-win/sailr</div>
+    </div>
+
+    <div id="fadeOverlay"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var DURATION = 60.0;
+  var stage = document.getElementById('stage');
+  var fadeOverlay = document.getElementById('fadeOverlay');
+
+  function fitStage(){
+    var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  window.addEventListener('resize', fitStage);
+  fitStage();
+
+  /* ---------------- math helpers ---------------- */
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function easeOutExpo(x){ x=clamp(x,0,1); return x<=0?0:x>=1?1:1-Math.pow(2,-10*x); }
+  function easeOutBack(x){ x=clamp(x,0,1); var c1=1.70158, c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
+  function prog(localT, delay, dur){ return clamp((localT-delay)/dur,0,1); }
+
+  function enter(el, localT, delay, dur){
+    dur = dur || 0.24;
+    var p = prog(localT, delay, dur);
+    var e = easeOutExpo(p);
+    el.style.opacity = e;
+    el.style.transform = 'translate(-50%,-50%) scale(' + lerp(0.92,1,e).toFixed(4) + ')';
+  }
+  function enterPlain(el, localT, delay, dur){
+    dur = dur || 0.24;
+    var p = prog(localT, delay, dur);
+    var e = easeOutExpo(p);
+    el.style.opacity = e;
+    el.style.transform = 'scale(' + lerp(0.92,1,e).toFixed(4) + ')';
+  }
+  function backPop(el, localT, delay, dur){
+    dur = dur || 0.24;
+    var p = prog(localT, delay, dur);
+    var e = easeOutBack(p);
+    el.style.opacity = clamp(p*3,0,1);
+    el.style.transform = 'translate(-50%,-50%) scale(' + Math.max(0,e).toFixed(4) + ')';
+  }
+  // Same back-out pop as backPop(), but for elements centered by normal flow
+  // (e.g. a flex column) rather than by the position:absolute; left:50%; top:50%
+  // trick. backPop's translate(-50%,-50%) has no anchor to cancel out here, so
+  // applying it would shove the element left/up by half its own box every frame.
+  function backPopPlain(el, localT, delay, dur){
+    dur = dur || 0.24;
+    var p = prog(localT, delay, dur);
+    var e = easeOutBack(p);
+    el.style.opacity = clamp(p*3,0,1);
+    el.style.transform = 'scale(' + Math.max(0,e).toFixed(4) + ')';
+  }
+  function fadeIn(el, localT, delay, dur){
+    dur = dur || 0.24;
+    el.style.opacity = easeOutExpo(prog(localT, delay, dur));
+  }
+  function wordShow(el, localT, delay){
+    var p = prog(localT, delay, 0.24);
+    var e = easeOutExpo(p);
+    el.style.opacity = e;
+    el.style.transform = 'translateY(' + lerp(14,0,e).toFixed(2) + 'px)';
+  }
+  // Maps an element's live getBoundingClientRect() into the stage's own 1920x1080
+  // coordinate space, undoing the CSS scale-to-fit transform on #stage. Used
+  // whenever a scene needs to land something (a cursor, a docked tag) on the
+  // actual rendered position of a DOM element rather than a hardcoded guess.
+  // Pure function of current layout, which is itself a deterministic function
+  // of T, so this stays frame-for-frame reproducible for __seek.
+  function stageLocalRect(elm){
+    var sr = stage.getBoundingClientRect();
+    var scale = sr.width / 1920;
+    var er = elm.getBoundingClientRect();
+    var left = (er.left - sr.left) / scale;
+    var top = (er.top - sr.top) / scale;
+    var width = er.width / scale;
+    var height = er.height / scale;
+    return { left:left, top:top, right:left+width, bottom:top+height, width:width, height:height, cx:left+width/2, cy:top+height/2 };
+  }
+
+  /* ---------------- pixel renderer (ported) ---------------- */
+  var PAL = {
+    navy:'#082850', blue:'#0061FF', sky:'#EAF2FB', green:'#00B368',
+    slate:'#5A7184', border:'#DAE4EF', gold:'#FFC400', red:'#E4002B',
+    hullDark:'#041838', waterDark:'#1f4fc0', waterMid:'#3f74e8',
+    sunGlow:'#FFE08A', cloud:'#ffffff', cloudShade:'#dfeafa',
+    sailWhite:'#f4f8ff', sailShade:'#d7e4fb', rig:'#3a567f',
+    skin:'#FFE08A', skinShade:'#F6C760'
+  };
+
+  function makePainter(canvas, GW, GH){
+    var ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    var sx = canvas.width/GW, sy = canvas.height/GH;
+    return {
+      ctx:ctx, GW:GW, GH:GH, sx:sx, sy:sy,
+      clear:function(){ ctx.clearRect(0,0,canvas.width,canvas.height); },
+      px:function(x,y,c){ ctx.fillStyle=c; ctx.fillRect(Math.round(x*sx),Math.round(y*sy),Math.ceil(sx),Math.ceil(sy)); },
+      rect:function(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(Math.round(x*sx),Math.round(y*sy),Math.ceil(w*sx),Math.ceil(h*sy)); },
+      dither:function(x,y,w,h,c1,c2){ for(var j=0;j<h;j++) for(var i=0;i<w;i++) this.px(x+i,y+j,((i+j)&1)?c2:c1); },
+      speck:function(x,y,w,h,base,fleck){ this.rect(x,y,w,h,base); for(var j=0;j<h;j++) for(var i=0;i<w;i++){ if(((i*2+j)%3)===0) this.px(x+i,y+j,fleck); } }
+    };
+  }
+  function fillTri(p, x1,y1,x2,y2,x3,y3, c){
+    var minY=Math.floor(Math.min(y1,y2,y3)), maxY=Math.ceil(Math.max(y1,y2,y3));
+    for(var y=minY;y<=maxY;y++){
+      var xs=[]; var E=[[x1,y1,x2,y2],[x2,y2,x3,y3],[x3,y3,x1,y1]];
+      for(var k=0;k<3;k++){ var ax=E[k][0],ay=E[k][1],bx=E[k][2],by=E[k][3];
+        if((ay<=y&&by>y)||(by<=y&&ay>y)) xs.push(ax+(bx-ax)*((y-ay)/(by-ay))); }
+      if(xs.length>=2){ var xa=Math.round(Math.min.apply(null,xs)), xb=Math.round(Math.max.apply(null,xs));
+        for(var x=xa;x<=xb;x++) p.px(x,y,c); }
+    }
+  }
+  function lineP(p, x1,y1,x2,y2,c){
+    var dx=x2-x1, dy=y2-y1, n=Math.max(Math.abs(dx),Math.abs(dy))||1;
+    for(var i=0;i<=n;i++) p.px(Math.round(x1+dx*i/n), Math.round(y1+dy*i/n), c);
+  }
+  function drawCrew(p, x, footY, shirt, wave){
+    p.rect(x, footY-4, 2, 2, PAL.skin);
+    p.px(x+1, footY-4, PAL.skinShade);
+    p.rect(x, footY-2, 2, 2, shirt);
+    p.px(x, footY, PAL.navy); p.px(x+1, footY, PAL.navy);
+    if(wave){ p.px(x+2, footY-3, shirt); } else { p.px(x-1, footY-2, shirt); }
+  }
+  function drawCloud(p,x,y,scale){
+    var rows=[[2,5],[0,9],[-1,12],[0,10]];
+    var yy=y;
+    for(var idx=0; idx<rows.length; idx++){
+      var r=rows[idx];
+      var ox=Math.round(r[0]*scale), w=Math.round(r[1]*scale+(scale<1?1:0));
+      p.rect(x+ox, yy, w, 1, idx===rows.length-1?PAL.cloudShade:PAL.cloud);
+      yy++;
+    }
+  }
+  function drawSky(p, opts){
+    var GW=p.GW, GH=p.GH;
+    var band = Math.floor(GH*0.34);
+    p.rect(0,0,GW,band,PAL.sky);
+    p.dither(0,band,GW,3,PAL.sky,'#e1ecfa');
+    // fill the pale band all the way down to the waterline (rather than an
+    // independently-rounded fraction of GH) so there is never a gap row between
+    // the sky and the water; the two used to be computed from separate floor()s
+    // that didn't line up, leaving a bare (black) canvas row showing through.
+    var waterTop = opts.waterTop!=null ? opts.waterTop : Math.floor(GH*0.44);
+    var paleTop = band+3;
+    if(waterTop-1 > paleTop) p.rect(0,paleTop,GW,(waterTop-1)-paleTop,'#e1ecfa');
+    // seam row: dither pale sky into the water's own top tone, palette colors only, never black
+    if(waterTop-1 >= paleTop) p.dither(0,waterTop-1,GW,1,'#e1ecfa','#cfe0fb');
+    var sunX=opts.sunX, sunY=opts.sunY, r=5;
+    for(var y=-r-2;y<=r+2;y++) for(var x=-r-2;x<=r+2;x++){
+      var d=Math.sqrt(x*x+y*y);
+      if(d>r && d<=r+2.3 && ((x+y)&1)) p.px(sunX+x,sunY+y,PAL.sunGlow);
+    }
+    for(var y2=-r;y2<=r;y2++) for(var x2=-r;x2<=r;x2++){
+      if(x2*x2+y2*y2<=r*r){ p.px(sunX+x2,sunY+y2,(x2<0&&y2<0)?'#FFD24D':PAL.gold); }
+    }
+    drawCloud(p, opts.cloudX, opts.cloudY, 1);
+    if(opts.cloud2X!=null) drawCloud(p, opts.cloud2X, opts.cloud2Y, .8);
+  }
+  function drawWater(p, top, phase){
+    var GW=p.GW, GH=p.GH;
+    var h=GH-top;
+    p.speck(0,top,GW,h,'#cfe0fb',PAL.sky);
+    var midTop=top+Math.floor(h*0.30);
+    p.dither(0,midTop,GW,2,PAL.waterMid,'#cfe0fb');
+    p.rect(0,midTop+2,GW,h-(midTop+2-top),PAL.waterMid);
+    var deepTop=top+Math.floor(h*0.62);
+    p.dither(0,deepTop,GW,2,PAL.waterDark,PAL.waterMid);
+    p.rect(0,deepTop+2,GW,GH-(deepTop+2),PAL.waterDark);
+    var crestY=[top+1,midTop+2,deepTop+2], crestC=['#ffffff','#dceafe','#cfe0fb'];
+    for(var ci=0; ci<3; ci++){
+      var cy=crestY[ci], speed=ci+1;
+      for(var x=0;x<GW;x+=6){
+        var ox=(x+Math.round(Math.sin((phase*speed+x)*0.5)*1.5)+phase*speed)%(GW+6)-3;
+        p.px(ox,cy,crestC[ci]); p.px(ox+1,cy,crestC[ci]);
+      }
+    }
+  }
+  function drawBoat(p, cx, baseY, opts){
+    var heel = opts.heel||0;
+    var raise = opts.sailRaise==null?1:opts.sailRaise;
+    var lean = Math.round(heel*3);
+    var deckY = baseY;
+    var hullRows=[
+      {w:34,c:PAL.navy},{w:34,c:PAL.blue},{w:32,c:PAL.navy},
+      {w:28,c:PAL.navy},{w:22,c:PAL.hullDark},{w:14,c:PAL.hullDark}
+    ];
+    for(var i=0;i<hullRows.length;i++){ var r=hullRows[i]; var x=Math.round(cx-r.w/2); p.rect(x,deckY+i,r.w,1,r.c); }
+    p.px(Math.round(cx+17),deckY+1,PAL.navy);
+    p.px(Math.round(cx-17),deckY+1,PAL.navy);
+
+    var mastBaseY=deckY-1, mastTopY=deckY-30;
+    var mastTopX=cx+lean;
+    var boomY=deckY-3, boomEndX=cx-15;
+    var bowX=cx+18, bowY=deckY-1;
+
+    if(raise>0.04){
+      var headY=Math.round(mastTopY+(1-raise)*(boomY-mastTopY));
+      var headX=Math.round(cx+lean*((mastBaseY-headY)/(mastBaseY-mastTopY)));
+      fillTri(p, headX,headY,  cx,boomY,  boomEndX,boomY, PAL.sailWhite);
+      lineP(p, boomEndX,boomY, headX,headY, PAL.sailShade);
+    } else {
+      p.rect(boomEndX+1, boomY-2, (cx-boomEndX), 2, PAL.sailShade);
+    }
+    p.rect(boomEndX, boomY, (cx-boomEndX)+1, 1, '#0b1f3a');
+    for(var y=mastBaseY; y>=mastTopY; y--){
+      var t=(mastBaseY-y)/(mastBaseY-mastTopY);
+      p.px(Math.round(cx+lean*t), y, PAL.navy);
+    }
+    lineP(p, mastTopX,mastTopY, bowX,bowY, PAL.rig);
+    if(raise>0.04){
+      var u=0.12+0.82*raise;
+      var jhX=Math.round(bowX+(mastTopX-bowX)*u);
+      var jhY=Math.round(bowY+(mastTopY-bowY)*u);
+      fillTri(p, jhX,jhY,  bowX,bowY,  cx+3,deckY-2, PAL.blue);
+      lineP(p, jhX,jhY, bowX,bowY, '#0b1f3a');
+    }
+    var fl=(opts.phase|0)%2;
+    p.px(mastTopX,   mastTopY-1, PAL.gold);
+    p.px(mastTopX+1, mastTopY-1, PAL.gold);
+    p.px(mastTopX+2, mastTopY-1+fl, PAL.gold);
+
+    var ph=(opts.phase|0);
+    drawCrew(p, Math.round(cx-9), deckY-1, PAL.gold, ph%2===0);
+    drawCrew(p, Math.round(cx-3), deckY-1, PAL.blue, false);
+  }
+  function drawWind(p, cx, y, phase){
+    var off=phase%14;
+    for(var i=0;i<3;i++){
+      var wx=(cx-26)-off-i*4, wy=y-6-i*3;
+      if(wx>0){ p.px(wx,wy,'#ffffff'); p.px(wx-2,wy,'#ffffff'); }
+    }
+    for(var j=0;j<4;j++){ if((phase+j)%6<3) p.px(cx+15+j, y+2-(j%2), '#ffffff'); }
+  }
+  function drawSpray(p, x, y, phase){
+    for(var i=0;i<7;i++){
+      var a = (phase*0.5+i*1.05);
+      var dx = Math.round(Math.cos(a)*(4+i));
+      var dy = Math.round(-Math.abs(Math.sin(a))*(2+i*0.5));
+      p.px(x+dx, y+dy, '#ffffff');
+    }
+  }
+  function drawLighthouse(p, x, waterTop){
+    var baseY = waterTop - 1;
+    p.rect(x-7, baseY, 15, 3, PAL.slate);
+    p.rect(x-6, baseY-1, 13, 1, '#8a97a8');
+    var towerW=7, towerH=24, topY=baseY-towerH;
+    for(var i=0;i<towerH;i++){
+      var y = baseY-1-i;
+      var c = (Math.floor(i/4)%2===0) ? PAL.sailWhite : PAL.red;
+      p.rect(x-Math.floor(towerW/2), y, towerW, 1, c);
+    }
+    p.rect(x-5, topY-2, 10, 2, PAL.navy);
+    p.rect(x-3, topY-6, 6, 4, PAL.navy);
+    p.rect(x-2, topY-5, 4, 2, PAL.sunGlow);
+    p.rect(x-3, topY-7, 6, 1, PAL.hullDark);
+    p.rect(x-1, topY-8, 2, 1, PAL.hullDark);
+  }
+
+  function paintHarbor(canvas, opts){
+    var GW=240, GH=135;
+    if(!canvas._p) canvas._p = makePainter(canvas, GW, GH);
+    var p = canvas._p;
+    p.clear();
+    var waterTop = Math.floor(GH*0.44);
+    drawSky(p, {sunX: opts.sunX!=null?opts.sunX:40, sunY: opts.sunY!=null?opts.sunY:22,
+      cloudX: opts.cloudX!=null?opts.cloudX:150, cloudY: opts.cloudY!=null?opts.cloudY:18,
+      cloud2X: opts.cloud2X!=null?opts.cloud2X:198, cloud2Y: opts.cloud2Y!=null?opts.cloud2Y:36,
+      waterTop: waterTop});
+    // every harbor paint is a pure function of the master clock T (opts.tt), so the
+    // crest phase derives from it automatically instead of relying on callers to
+    // remember to pass one; this is what makes the water actually drift.
+    var waterPhase = opts.phase!=null ? opts.phase : (opts.tt||0)*8;
+    drawWater(p, waterTop, waterPhase);
+    if(opts.lighthouse) drawLighthouse(p, opts.lighthouseX!=null?opts.lighthouseX:GW-20, waterTop);
+    var bob = Math.round(Math.sin((opts.tt||0)*2.0)*(opts.bobAmp!=null?opts.bobAmp:1.4));
+    var boatX = opts.boatX!=null?opts.boatX:GW/2;
+    drawBoat(p, boatX, waterTop+6+bob, {heel:opts.heel||0, sailRaise: opts.sailRaise!=null?opts.sailRaise:0, phase: Math.floor((opts.tt||0)*6)});
+    if(opts.wind) drawWind(p, boatX, waterTop+bob, Math.floor((opts.tt||0)*10));
+    if(opts.spray) drawSpray(p, boatX+16, waterTop+bob+2, opts.tt||0);
+  }
+
+  function paintClock(canvas, t){
+    var GW=20, GH=20;
+    if(!canvas._p) canvas._p = makePainter(canvas, GW, GH);
+    var p = canvas._p;
+    p.clear();
+    for(var y=0;y<GH;y++) for(var x=0;x<GW;x++){
+      var dx=x-9.5, dy=y-9.5; var d=Math.sqrt(dx*dx+dy*dy);
+      if(d<9) p.px(x,y,'#ffffff');
+    }
+    for(var a=0;a<360;a+=15){ var rad=a*Math.PI/180; var x2=Math.round(9.5+Math.cos(rad)*9), y2=Math.round(9.5+Math.sin(rad)*9); p.px(x2,y2,PAL.navy); }
+    var minAng = (t/6)*2*Math.PI - Math.PI/2;
+    var secAng = (t/1.5)*2*Math.PI - Math.PI/2;
+    var mx=9.5+Math.cos(minAng)*6, my=9.5+Math.sin(minAng)*6;
+    lineP(p, 9.5,9.5, mx,my, PAL.navy);
+    var sx2=9.5+Math.cos(secAng)*7.5, sy2=9.5+Math.sin(secAng)*7.5;
+    lineP(p, 9.5,9.5, sx2,sy2, PAL.red);
+    p.rect(9,9,2,2,PAL.navy);
+  }
+
+  /* ---------------- element cache ---------------- */
+  var el = {};
+  ['co-window','co-clock','co-kicker','co-b1','co-b2','co-b3',
+   'cv-reveal','reveal-panel','cv-castoff','sail-btn','co-cursor1','castoff-tag',
+   'tk-line1','tk-line2','tk-flag1','tk-flag2','tk-caption',
+   'c1-card','c2-card','c3-card','c4-card','c5-card','c6-card',
+   'c1-tag','c2-tag','c3-tag','c4-tag',
+   'cv-breath1','chart-buoys','lb-flip',
+   'cv-breath2','nod-card','nod-tag','nod-btn','nod-cursor','nod-sparkle',
+   'pay1-pill','pay2-grid','pay3-lines','cv-pay5','pay6-stack',
+   'cv-quiet','tagline-text','end-panel','end-subtitle','end-github'
+  ].forEach(function(id){ el[id] = document.getElementById(id); });
+
+  var COLD_BULLETS = [
+    {node:el['co-b1'], text:'- send the deck', start:0.4},
+    {node:el['co-b2'], text:'- find a time next week', start:1.05},
+    {node:el['co-b3'], text:'- check the Acme quote', start:2.0}
+  ];
+  var CPS = 42;
+
+  function paintColdOpen(elRoot, lt, T){
+    enterPlain(el['co-window'], lt, 0, 0.001);
+    el['co-window'].style.transform = 'scale(1)';
+    fadeIn(el['co-kicker'], lt, 0.05, 0.2);
+    paintClock(el['co-clock'], T);
+    var lastEnd = 0, typingNode=null, typingEnd=0;
+    COLD_BULLETS.forEach(function(b){
+      var dur = b.text.length/CPS;
+      var n = clamp(Math.floor((lt-b.start)*CPS),0,b.text.length);
+      if(lt < b.start){ b.node.innerHTML='&nbsp;'; }
+      else {
+        b.node.textContent = b.text.slice(0,n);
+        if(n < b.text.length){ typingNode=b.node; }
+      }
+      lastEnd = Math.max(lastEnd, b.start+dur);
+    });
+    var blink = (Math.floor(T*2)%2===0);
+    var caretHost = typingNode || COLD_BULLETS[2].node;
+    if(lt >= 0.05){
+      var caret = document.createElement('span');
+      caretHost.innerHTML = caretHost.innerHTML.replace(/&nbsp;$/,'');
+      if(blink) caretHost.innerHTML += '<span style="display:inline-block;width:12px;height:24px;background:#5A7184;vertical-align:-4px;margin-left:2px;"></span>';
+    }
+  }
+
+  function paintKineticLine(root, words, accentIdx, lt){
+    var spans = root.querySelectorAll('.kt-word');
+    spans.forEach(function(s, i){ wordShow(s, lt, i*0.07); });
+  }
+
+  function paintReveal(root, lt, T){
+    // boat sits in the left third of the grid so it reads beside the wordmark panel,
+    // not moored directly behind it with the mast poking over the top
+    paintHarbor(el['cv-reveal'], { tt:T, sunX:44, sunY:24, cloudX:170, cloudY:20, cloud2X:214, cloud2Y:40,
+      lighthouse:true, lighthouseX:216, boatX:60, heel:0, sailRaise:0 });
+    backPop(el['reveal-panel'], lt, 0.3, 0.24);
+  }
+
+  function paintCastoff(root, lt, T){
+    var raise = clamp((lt-1.0)/0.9,0,1);
+    var heel = raise*0.65;
+    var wind = raise>0.55;
+    paintHarbor(el['cv-castoff'], { tt:T, sunX:44, sunY:24, cloudX:170, cloudY:20, cloud2X:214, cloud2Y:40,
+      lighthouse:true, lighthouseX:216, boatX:120, heel:heel, sailRaise:raise, wind:wind, spray: raise>0.7 });
+
+    var btn = el['sail-btn'];
+    var pressed = lt>=0.4 && lt<0.55;
+    btn.classList.toggle('pressed', pressed);
+    btn.style.opacity = 1 - easeOutExpo(prog(lt, 1.0, 0.5));
+
+    var cur = el['co-cursor1'];
+    var cs = prog(lt, 0.0, 0.4);
+    var startX = 1920*0.72, startY = 1080*0.86;
+    var btnRect = {x:1920/2 - 6, y:1080-150-40};
+    var cx = lerp(startX, btnRect.x, easeOutExpo(cs));
+    var cy = lerp(startY, btnRect.y, easeOutExpo(cs));
+    cur.style.left = cx+'px'; cur.style.top = cy+'px';
+    cur.style.opacity = lt<0.05?0:(lt>0.75?Math.max(0,1-(lt-0.75)/0.3):1);
+
+    fadeIn(el['castoff-tag'], lt, 2.5, 0.3);
+  }
+
+  function typeText(node, full, lt, start, cps){
+    cps = cps||44;
+    if(lt < start){ node.textContent=''; return false; }
+    var n = clamp(Math.floor((lt-start)*cps),0,full.length);
+    node.textContent = full.slice(0,n);
+    return n>=full.length;
+  }
+
+  function paintTasks(root, lt, T){
+    typeText(el['tk-line1'], '"...can you check what we quoted Acme last time?"', lt, 0.1, 42);
+    fadeIn(el['tk-flag1'], lt, 2.2, 0.24);
+    typeText(el['tk-line2'], '"...Slack Sam the timeline."', lt, 3.2, 42);
+    fadeIn(el['tk-flag2'], lt, 5.0, 0.24);
+    fadeIn(el['tk-caption'], lt, 2.3, 0.3);
+  }
+
+  function paintCard(cardEl, lt){
+    enter(cardEl, lt, 0, 0.24);
+  }
+  // Docks a card's one-word mono tag 24px below the card's own left edge,
+  // measured live off the card's rendered box, instead of a fixed stage
+  // corner that left it stranded far from whichever card was on screen.
+  function paintCardWithTag(cardEl, tagEl, lt){
+    enter(cardEl, lt, 0, 0.24);
+    var r = stageLocalRect(cardEl);
+    tagEl.style.left = r.left + 'px';
+    tagEl.style.top = (r.bottom + 24) + 'px';
+    tagEl.style.opacity = cardEl.style.opacity;
+  }
+
+  function paintBreath1(root, lt, T){
+    var x = lerp(-30, 270, lt/1.4);
+    paintHarbor(el['cv-breath1'], { tt:T, sunX:44, sunY:24, cloudX:60, cloudY:18, cloud2X:200, cloud2Y:34,
+      boatX:x, heel:0.6, sailRaise:1, wind:true, spray:true, bobAmp:1.2 });
+  }
+  function paintBreath2(root, lt, T){
+    paintHarbor(el['cv-breath2'], { tt:T, sunX:60, sunY:22, cloudX:170, cloudY:18, cloud2X:40, cloud2Y:32,
+      boatX:150, heel:0.55, sailRaise:1, wind:true, spray:true });
+  }
+
+  function paintChartBuoys(container, lt, states){
+    var buoys = container.querySelectorAll('.buoy');
+    buoys.forEach(function(b, i){
+      var st = states(i, lt);
+      b.classList.toggle('active', st==='active');
+      b.classList.toggle('done', st==='done');
+    });
+  }
+  function paintChart1(root, lt){
+    paintChartBuoys(el['chart-buoys'], lt, function(i, lt){
+      var onAt = i*0.4;
+      var offAt = onAt+0.4;
+      if(lt < onAt) return 'pending';
+      if(lt < offAt) return 'active';
+      return 'done';
+    });
+  }
+
+  function paintLogbook(root, lt){
+    var p = clamp(lt/0.8, 0, 1);
+    var steps = Math.floor(p*8)/8;
+    el['lb-flip'].style.transform = 'rotateY(' + (-170*steps) + 'deg)';
+  }
+
+  // .cursor is a 40x52 box (viewBox 0 0 12 16) whose hotspot/tip sits at
+  // roughly (1,1) in that viewBox, not at the box's top-left corner.
+  var CURSOR_TIP_DX = 1 * (40/12), CURSOR_TIP_DY = 1 * (52/16);
+
+  function paintNod(root, lt, T){
+    var cur = el['nod-cursor'];
+    var btn = el['nod-btn'];
+    // land the cursor tip on the button's actual rendered center rather than a
+    // hardcoded guess (which drifted 51-104px below the real button depending
+    // on card content height); getBoundingClientRect is measured live and
+    // converted into stage space so it tracks the real layout every frame.
+    var btnRect = stageLocalRect(btn);
+    var cs = prog(lt, 2.0, 0.9);
+    var startX = 1920*0.86, startY = 1080*0.30;
+    var endX = btnRect.cx, endY = btnRect.cy;
+    var cx = lerp(startX, endX, easeOutExpo(cs));
+    var cy = lerp(startY, endY, easeOutExpo(cs));
+    cur.style.left = (cx - CURSOR_TIP_DX)+'px'; cur.style.top = (cy - CURSOR_TIP_DY)+'px';
+    cur.style.opacity = lt<2.0?0:(lt>4.6?Math.max(0,1-(lt-4.6)/0.4):1);
+
+    var pressed = lt>=3.0 && lt<3.15;
+    btn.classList.toggle('pressed', pressed);
+
+    var flipped = lt>=3.0;
+    el['nod-tag'].textContent = flipped ? 'Sent, verified.' : 'Send · Needs a nod';
+    el['nod-tag'].classList.toggle('send', !flipped);
+    el['nod-tag'].classList.toggle('done', flipped);
+
+    var sparkle = el['nod-sparkle'];
+    var sp = prog(lt, 3.0, 0.3);
+    if(flipped && sp<1){
+      sparkle.style.opacity = 1-sp;
+      sparkle.style.transform = 'scale(' + (1+sp*1.6) + ')';
+      sparkle.innerHTML = '<span style="position:absolute;left:-16px;top:-30px;font-size:34px;color:#FFC400;">&#10022;</span>';
+    } else { sparkle.innerHTML=''; }
+  }
+
+  function paintPay2(root, lt){
+    var grid = el['pay2-grid'];
+    if(!grid._built){
+      for(var i=0;i<7;i++){
+        var cell = document.createElement('div');
+        cell.style.cssText='width:90px;height:90px;border:3px solid #3a567f;background:rgba(255,255,255,.06);position:relative;';
+        if(i===3){ cell.id='pay2-target'; }
+        grid.appendChild(cell);
+      }
+      grid._built = true;
+    }
+    var target = document.getElementById('pay2-target');
+    var p = prog(lt, 0.05, 0.3);
+    var e = easeOutBack(p);
+    if(!target.querySelector('.blk')){
+      var blk = document.createElement('div');
+      blk.className='blk';
+      blk.style.cssText='position:absolute;inset:6px;background:#00B368;';
+      target.appendChild(blk);
+    }
+    target.querySelector('.blk').style.opacity = clamp(p*2,0,1);
+    target.querySelector('.blk').style.transform = 'scale(' + Math.max(0,e).toFixed(3) + ')';
+  }
+
+  function paintPay3(root, lt){
+    var lines = root.querySelectorAll('.p3l');
+    lines.forEach(function(ln, i){ fadeIn(ln, lt, i*0.15, 0.2); });
+  }
+
+  function paintPay5(root, lt, T){
+    paintHarbor(el['cv-pay5'], { tt:T, sunX:44, sunY:24, cloudX:150, cloudY:18, cloud2X:40, cloud2Y:32,
+      boatX:120, heel:0.6, sailRaise:1, wind:true, spray:true });
+  }
+
+  function paintPay6(root, lt){
+    var cards = root.querySelectorAll('.p6card');
+    cards.forEach(function(c, i){ enterPlain(c, lt, i*0.09, 0.2); c.style.transform = 'scale(' + (0.92+0.08*easeOutExpo(prog(lt,i*0.09,0.2))) + ')'; });
+  }
+
+  function paintQuiet(root, lt, T){
+    paintHarbor(el['cv-quiet'], { tt:T*0.15, sunX:44, sunY:24, cloudX:150, cloudY:18, cloud2X:40, cloud2Y:32,
+      boatX:120, heel:0.03, sailRaise:0, bobAmp:0.3 });
+  }
+
+  function paintTagline(root, lt){
+    var p = prog(lt, 0.05, 0.32);
+    var e = easeOutBack(p);
+    el['tagline-text'].style.opacity = clamp(p*2,0,1);
+    el['tagline-text'].style.transform = 'scale(' + Math.max(0,e).toFixed(4) + ')';
+  }
+
+  function paintEndcard(root, lt){
+    // end-panel is a normal-flow flex child (centered by #s-endcard's
+    // align-items:center), not an absolutely-positioned left:50%/top:50% box,
+    // so it needs the plain (no-translate) pop, or it renders shifted left/up
+    // by half its own size and no longer lines up with the subtitle/URL below it.
+    backPopPlain(el['end-panel'], lt, 0.3, 0.24);
+    fadeIn(el['end-subtitle'], lt, 1.2, 0.3);
+    fadeIn(el['end-github'], lt, 2.0, 0.3);
+  }
+
+  /* ---------------- shot registry ---------------- */
+  var SHOTS = [
+    {id:'s-cold-open', t0:0.0,  t1:4.0,  paint:paintColdOpen},
+    {id:'s-line-a',    t0:4.0,  t1:5.4,  paint:function(r,lt){ paintKineticLine(r,null,null,lt); }},
+    {id:'s-line-b',    t0:5.5,  t1:7.0,  paint:function(r,lt){ paintKineticLine(r,null,null,lt); }},
+    {id:'s-reveal',    t0:7.0,  t1:9.0,  paint:paintReveal},
+    {id:'s-castoff',   t0:9.0,  t1:14.0, paint:paintCastoff},
+    {id:'s-tasks',     t0:14.0, t1:20.0, paint:paintTasks},
+    {id:'s-card1',     t0:20.0, t1:21.6, paint:function(r,lt){ paintCardWithTag(el['c1-card'],el['c1-tag'],lt); }},
+    {id:'s-card2',     t0:21.6, t1:23.2, paint:function(r,lt){ paintCardWithTag(el['c2-card'],el['c2-tag'],lt); }},
+    {id:'s-card3',     t0:23.2, t1:24.8, paint:function(r,lt){ paintCardWithTag(el['c3-card'],el['c3-tag'],lt); }},
+    {id:'s-card4',     t0:24.8, t1:26.2, paint:function(r,lt){ paintCardWithTag(el['c4-card'],el['c4-tag'],lt); }},
+    {id:'s-breath1',   t0:26.2, t1:27.6, paint:paintBreath1},
+    {id:'s-chart1',    t0:27.6, t1:29.2, paint:paintChart1},
+    {id:'s-logbook',   t0:29.2, t1:30.8, paint:paintLogbook},
+    {id:'s-card5',     t0:30.8, t1:31.6, paint:function(r,lt){ paintCard(el['c5-card'],lt); }},
+    {id:'s-card6',     t0:31.6, t1:32.4, paint:function(r,lt){ paintCard(el['c6-card'],lt); }},
+    {id:'s-breath2',   t0:32.4, t1:34.0, paint:paintBreath2},
+    {id:'s-nod',       t0:34.0, t1:39.0, paint:paintNod},
+    {id:'s-pay1',      t0:39.0,      t1:40.1667,   paint:function(r,lt){ enterPlain(el['pay1-pill'],lt,0,0.2); } },
+    {id:'s-pay2',      t0:40.1667,   t1:41.3333,   paint:paintPay2 },
+    {id:'s-pay3',      t0:41.3333,   t1:42.5,      paint:paintPay3 },
+    {id:'s-pay4',      t0:42.5,      t1:43.6667,   paint:function(){} },
+    {id:'s-pay5',      t0:43.6667,   t1:44.8333,   paint:paintPay5 },
+    {id:'s-pay6',      t0:44.8333,   t1:46.0,      paint:paintPay6 },
+    {id:'s-quiet',     t0:46.0, t1:49.0, fadeInDur:0.25, paint:paintQuiet},
+    {id:'s-tagline',   t0:49.0, t1:53.0, paint:paintTagline},
+    {id:'s-endcard',   t0:53.0, t1:60.0, paint:paintEndcard}
+  ];
+  var shotEls = SHOTS.map(function(s){ return document.getElementById(s.id); });
+
+  function render(T){
+    T = ((T % DURATION) + DURATION) % DURATION;
+    for(var i=0;i<SHOTS.length;i++){
+      var s = SHOTS[i], e2 = shotEls[i];
+      var active = T>=s.t0 && T<s.t1;
+      if(active){
+        var op = 1;
+        if(s.fadeInDur){ op = clamp((T-s.t0)/s.fadeInDur,0,1); }
+        e2.style.opacity = op;
+        if(s.paint) s.paint(e2, T-s.t0, T);
+      } else {
+        e2.style.opacity = 0;
+      }
+    }
+    fadeOverlay.style.opacity = T>=59.5 ? clamp((T-59.5)/0.5,0,1) : 0;
+  }
+
+  /* ---------------- hooks ---------------- */
+  var params = new URLSearchParams(location.search);
+  var hasT = params.has('t');
+  var isCapture = params.get('capture') === '1';
+  var lastT = 0; // most recently rendered time, so a late font-ready repaint hits the same frame
+
+  function renderAndTrack(T){
+    lastT = T;
+    render(T);
+  }
+
+  function start(){
+    if(hasT){
+      var t = parseFloat(params.get('t'));
+      if(isNaN(t)) t = 0;
+      renderAndTrack(t);
+    } else if(isCapture){
+      renderAndTrack(0);
+      window.__seek = function(t){ renderAndTrack(t); };
+    } else {
+      var T = 0, last = null;
+      function tick(now){
+        if(last==null) last = now;
+        var dt = (now-last)/1000;
+        last = now;
+        T = (T + dt) % DURATION;
+        render(T);
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+  }
+
+  // Engine hooks (window.__seek, the ?t= freeze-frame) must exist the instant
+  // this script runs: headless QA polls for them right away and ?t= must never
+  // hang waiting on anything else. Start synchronously, not gated behind
+  // document.fonts.ready.
+  start();
+
+  // Webfonts can finish loading a beat after first paint and nudge text metrics
+  // (kerning/line width). Once that settles, repaint whatever frame is
+  // currently frozen so a screenshot taken a little later still looks right.
+  // Autoplay needs no help: tick() above is already repainting every frame.
+  if(!hasT && !isCapture){
+    // autoplay loop already repaints continuously; nothing to nudge
+  } else if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ render(lastT); }).catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>
