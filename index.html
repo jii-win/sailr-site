@@ -197,6 +197,12 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
 .punchline{ text-align:center; font-family:'Outfit'; font-weight:600; font-size:clamp(18px,2.4vw,22px); color:var(--navy); max-width:56ch; margin:0 auto 16px; line-height:1.4; }
 .why-para{ text-align:center; font-size:15px; color:var(--slate); max-width:66ch; margin:0 auto; line-height:1.6; }
 
+/* full-bleed statement banner, sits between the why-para and #how */
+.why-banner{ background:var(--navy); padding:96px 24px; text-align:center; }
+.why-banner-line{ font-family:'Outfit'; font-weight:700; font-size:clamp(48px,7vw,96px); color:#fff; line-height:1.05; margin:0; }
+.why-banner-line .accent{ color:var(--green); }
+.why-banner-mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; letter-spacing:.04em; color:var(--slate); margin:16px 0 0; }
+
 @media (max-width:860px){
   .compare{ flex-direction:column; }
   .compare-panel{ flex:none; }
@@ -224,6 +230,13 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
 .crew-card h3{ font-weight:700; font-size:16.5px; color:var(--navy); margin:0 0 8px; }
 .crew-card h3 .dot{ color:var(--slate); font-weight:400; margin:0 2px; }
 .crew-card p{ font-size:14px; color:var(--slate); line-height:1.55; margin:0; }
+
+.connector-block{ margin-top:42px; text-align:center; }
+.connector-title{ font-family:'Outfit'; font-weight:600; font-size:22px; color:var(--navy); margin:0 0 12px; }
+.connector-body{ font-size:15px; color:var(--slate); max-width:62ch; margin:0 auto 24px; line-height:1.6; }
+.connector-chips{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.chip.fill{ background:var(--blue); color:#fff; border-color:var(--navy); }
+
 .trust-strip{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:38px; }
 .trust-chip{ background:#fff; border:var(--px) solid var(--navy); padding:11px 16px; font-size:13px; font-weight:600; color:var(--navy); box-shadow:3px 4px 0 0 var(--border); }
 
@@ -344,14 +357,14 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
      ============================================================ -->
 <section id="why" class="section">
   <h2 class="reveal">Not a notetaker. A doer.</h2>
-  <p class="lead reveal">Every AI meeting tool ends the same way: a page of notes and a list of things you still have to go do yourself. Transcribe, summarize, sync a few fields, then hand you homework. Sailr does not stop there. The second someone says &quot;can you check what we quoted them&quot; or &quot;Slack Sam the timeline,&quot; the crew is already moving, in your own Calendar, your own Gmail, your own Slack. Not a summary of the task. The task.</p>
+  <p class="lead reveal">Every week another AI notetaker launches. Notes, summaries, action items, a tidy recap in your inbox. Read it back later and the work is still sitting there, waiting for you. A prettier to-do list is still a to-do list. Sailr is pointed somewhere else entirely: the moment a task is said out loud, the crew starts doing it.</p>
 
   <div class="compare reveal" id="compare">
     <div class="compare-panel panel">
       <div class="compare-head"><span class="chip slate">An AI notetaker</span></div>
       <div class="note-window">
         <p class="typed-line note-typed" id="noteTyped" aria-hidden="true"><span class="txt"></span><span class="caret"></span></p>
-        <span class="sr-only">&quot;...can you check what we quoted Acme last time?&quot;</span>
+        <span class="sr-only" id="noteSR">&quot;...can you check what we quoted Acme last time?&quot;</span>
         <ul class="note-bullets" id="noteBullets">
           <li>- check the quote</li>
           <li>- send the deck</li>
@@ -364,24 +377,24 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
       <div class="compare-head"><span class="chip blue">Sailr</span></div>
       <div class="log-strip">
         <p class="typed-line log-typed" id="logTyped" aria-hidden="true"><span class="txt"></span><span class="caret"></span></p>
-        <span class="sr-only">&quot;...can you check what we quoted Acme last time?&quot;</span>
+        <span class="sr-only" id="logSR">&quot;...can you check what we quoted Acme last time?&quot;</span>
 
         <div class="acard crew-pop" id="lookoutCard">
           <div class="acard-top">
             <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#0061FF" stroke-width="1.4"/><rect x="2" y="7.4" width="12" height="1.2" fill="#0061FF"/><path d="M8 2.5 L10 8 L8 13.5 L6 8 Z" fill="none" stroke="#0061FF" stroke-width="1"/></svg>
-            Lookout checked the Acme quote
+            <span id="lookoutTitle">Lookout checked the Acme quote</span>
             <span class="tag read">Read · done</span>
           </div>
-          <div class="acard-body">$18,400 on the March order.</div>
+          <div class="acard-body" id="lookoutBody">$18,400 on the March order.</div>
         </div>
 
         <div class="acard crew-pop" id="slackCard">
           <div class="acard-top">
-            <svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/></svg>
-            Slack draft
+            <svg class="ico" id="sendIco" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/></svg>
+            <span id="sendTitle">Slack draft</span>
             <span class="tag send" id="slackTag">Send · needs a nod</span>
           </div>
-          <div class="dm">&rarr; Sam Whitfield: &quot;Confirmed with Lookout, we quoted Acme $18,400 on the March order. Sending you the deck now.&quot;</div>
+          <div class="dm" id="sendBody">&rarr; Sam Whitfield: &quot;Confirmed with Lookout, we quoted Acme $18,400 on the March order. Sending you the deck now.&quot;</div>
           <div class="confirm-row">
             <button class="pbtn send" id="sendBtn" tabindex="-1">Send</button>
             <svg class="pixel-cursor" id="pixelCursor" viewBox="0 0 16 16" aria-hidden="true">
@@ -398,6 +411,14 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
   <p class="punchline reveal">One hands you a to-do list. The other is already three tasks into it.</p>
   <p class="why-para reveal">There is no handoff. The listener and the doer are the same boat. Nothing gets exported to another app or pasted into a chatbot for you to babysit. The doing is baked in.</p>
 </section>
+
+<!-- ============================================================
+     WHY BANNER -- full-bleed statement, between #why and #how
+     ============================================================ -->
+<div class="why-banner reveal">
+  <p class="why-banner-line">Not notes.<span class="accent"> Done.</span></p>
+  <p class="why-banner-mono">the whole pitch, honestly.</p>
+</div>
 
 <!-- ============================================================
      HOW IT WORKS
@@ -457,6 +478,32 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
       <p>Spins up a session on your Mac to build the demo or run the task.</p>
     </div>
   </div>
+
+  <div class="connector-block reveal">
+    <h3 class="connector-title">The roster grows with your Claude.</h3>
+    <p class="connector-body">Sailr works through your own Claude connectors. Whatever your Claude can reach, a crew mate can put on watch. Reads run themselves, sends wait for your nod, same rule for every tool.</p>
+    <div class="connector-chips">
+      <span class="chip">Gmail</span>
+      <span class="chip">Google Calendar</span>
+      <span class="chip">Slack</span>
+      <span class="chip">HubSpot</span>
+      <span class="chip">Notion</span>
+      <span class="chip">Asana</span>
+      <span class="chip">Jira</span>
+      <span class="chip">Confluence</span>
+      <span class="chip">Linear</span>
+      <span class="chip">Google Drive</span>
+      <span class="chip">Zoom</span>
+      <span class="chip">monday.com</span>
+      <span class="chip">Box</span>
+      <span class="chip">Intercom</span>
+      <span class="chip">Figma</span>
+      <span class="chip">Canva</span>
+      <span class="chip">GitHub</span>
+      <span class="chip fill">+ yours</span>
+    </div>
+  </div>
+
   <div class="trust-strip">
     <span class="trust-chip reveal">Reads run free. Sends wait for the nod.</span>
     <span class="trust-chip reveal">Local Whisper. Meetings stay on your Mac.</span>
@@ -774,9 +821,10 @@ function drawBoat(p, cx, baseY, opts){
   }
 
   var fl=(opts.phase|0)%2;
+  // pennant streams AFT (the boat sails bow-right, so the wind pushes it back)
   p.px(mastTopX,   mastTopY-1, PAL.gold);
-  p.px(mastTopX+1, mastTopY-1, PAL.gold);
-  p.px(mastTopX+2, mastTopY-1+fl, PAL.gold);
+  p.px(mastTopX-1, mastTopY-1, PAL.gold);
+  p.px(mastTopX-2, mastTopY-1+fl, PAL.gold);
 
   var ph=(opts.phase|0);
   drawCrewMember(p, Math.round(cx-9), deckY-1, PAL.gold, ph%2===0);
@@ -963,16 +1011,72 @@ function registerScene(scene){ scenes.push(scene); }
   var noteTypedLine = document.getElementById('noteTyped');
   var noteBullets = document.querySelectorAll('#noteBullets li');
   var noteStamp = document.getElementById('noteStamp');
+  var noteSR = document.getElementById('noteSR');
   var logTypedTxt = root.querySelector('#logTyped .txt');
   var logTypedLine = document.getElementById('logTyped');
+  var logSR = document.getElementById('logSR');
   var lookoutCard = document.getElementById('lookoutCard');
+  var lookoutTitle = document.getElementById('lookoutTitle');
+  var lookoutBody = document.getElementById('lookoutBody');
   var slackCard = document.getElementById('slackCard');
+  var sendTitle = document.getElementById('sendTitle');
+  var sendBody = document.getElementById('sendBody');
+  var sendIco = document.getElementById('sendIco');
   var slackTag = document.getElementById('slackTag');
   var sendBtn = document.getElementById('sendBtn');
   var cursor = document.getElementById('pixelCursor');
   var sailStamp = document.getElementById('sailStamp');
 
-  var LINE = '"...can you check what we quoted Acme last time?"';
+  /* Three scripted scenarios, played round-robin -- one per loop
+     iteration. Choreography/timings/cursor logic below stay identical;
+     only the text content and the two card headers/icons swap. */
+  var SEND_ICONS = {
+    slack: '<rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/>',
+    envelope: '<rect x="1.5" y="3.5" width="13" height="9" fill="#0061FF"/><rect x="1.5" y="3.5" width="13" height="2.2" fill="#fff"/><path d="M1.5 3.5 L8 8.5 L14.5 3.5 Z" fill="#CFE0FB"/>'
+  };
+  var SCENARIOS = [
+    {
+      line: '"...can you check what we quoted Acme last time?"',
+      bullets: ['- check the quote', '- send the deck', '- find a time next week'],
+      readTitle: 'Lookout checked the Acme quote',
+      readBody: '$18,400 on the March order.',
+      sendTitle: 'Slack draft',
+      sendBody: '→ Sam Whitfield: "Confirmed with Lookout, we quoted Acme $18,400 on the March order. Sending you the deck now."',
+      sendIcon: 'slack'
+    },
+    {
+      line: '"...let\'s get 30 minutes with Dana next week."',
+      bullets: ['- email Dana', '- find a slot', '- send an invite'],
+      readTitle: 'Calendar checked: you and Dana',
+      readBody: 'Tuesday 10:30 and Thursday 2:00 are both open.',
+      sendTitle: 'Invite ready',
+      sendBody: '→ Dana Cole: "Sailr wants to book Thursday 2:00 PM, 30 minutes: Rollout sync." Held for your nod.',
+      sendIcon: 'envelope'
+    },
+    {
+      line: '"...log that in HubSpot and file the bug."',
+      bullets: ['- update the deal', '- write the ticket', '- paste the notes somewhere'],
+      readTitle: 'HubSpot read: Acme renewal',
+      readBody: 'Deal is in Negotiation, $48,000, close date Aug 29.',
+      sendTitle: 'Two drafts racked up',
+      sendBody: 'HubSpot deal note + a bug ticket for the export error. Both wait for one nod.',
+      sendIcon: 'envelope'
+    }
+  ];
+  var scenarioIndex = 0;
+
+  function applyScenario(s){
+    lookoutTitle.textContent = s.readTitle;
+    lookoutBody.textContent = s.readBody;
+    sendTitle.textContent = s.sendTitle;
+    sendBody.textContent = s.sendBody;
+    sendIco.innerHTML = SEND_ICONS[s.sendIcon];
+    noteBullets[0].textContent = s.bullets[0];
+    noteBullets[1].textContent = s.bullets[1];
+    noteBullets[2].textContent = s.bullets[2];
+    noteSR.textContent = s.line;
+    logSR.textContent = s.line;
+  }
 
   function resetDOM(){
     noteTypedTxt.textContent=''; noteTypedLine.classList.remove('done');
@@ -1005,9 +1109,11 @@ function registerScene(scene){ scenes.push(scene); }
   function getToken(){ return token; }
 
   function renderStatic(){
+    var s = SCENARIOS[0];
+    applyScenario(s);
     resetDOM();
-    noteTypedTxt.textContent = LINE; noteTypedLine.classList.add('done');
-    logTypedTxt.textContent = LINE; logTypedLine.classList.add('done');
+    noteTypedTxt.textContent = s.line; noteTypedLine.classList.add('done');
+    logTypedTxt.textContent = s.line; logTypedLine.classList.add('done');
     noteBullets.forEach(function(li){ li.classList.add('show'); });
     noteStamp.classList.add('show');
     lookoutCard.classList.add('show');
@@ -1018,10 +1124,13 @@ function registerScene(scene){ scenes.push(scene); }
   }
 
   async function playOnce(my){
+    var s = SCENARIOS[scenarioIndex % SCENARIOS.length];
+    scenarioIndex++;
+    applyScenario(s);
     resetDOM();
     await Promise.all([
-      typeText(noteTypedTxt, LINE, 26, my, getToken),
-      typeText(logTypedTxt, LINE, 26, my, getToken)
+      typeText(noteTypedTxt, s.line, 26, my, getToken),
+      typeText(logTypedTxt, s.line, 26, my, getToken)
     ]);
     if(my!==token) return;
     noteTypedLine.classList.add('done'); logTypedLine.classList.add('done');
@@ -1043,14 +1152,16 @@ function registerScene(scene){ scenes.push(scene); }
     slackCard.classList.add('show');
 
     await wait(900); if(my!==token) return;
+    // the cursor's absolute containing block is .confirm-row (position:relative),
+    // so measure against the row, not the card
     var btnRect = sendBtn.getBoundingClientRect();
-    var cardRect = slackCard.getBoundingClientRect();
+    var rowRect = sendBtn.parentElement.getBoundingClientRect();
     cursor.style.opacity = 1;
-    cursor.style.left = (btnRect.left - cardRect.left + btnRect.width + 6) + 'px';
-    cursor.style.top = (btnRect.top - cardRect.top - 8) + 'px';
+    cursor.style.left = (btnRect.left - rowRect.left + btnRect.width + 6) + 'px';
+    cursor.style.top = (btnRect.top - rowRect.top - 8) + 'px';
     await wait(150); if(my!==token) return;
-    cursor.style.left = (btnRect.left - cardRect.left + btnRect.width/2) + 'px';
-    cursor.style.top = (btnRect.top - cardRect.top + btnRect.height/2) + 'px';
+    cursor.style.left = (btnRect.left - rowRect.left + btnRect.width/2 - 4) + 'px';
+    cursor.style.top = (btnRect.top - rowRect.top + btnRect.height/2 - 2) + 'px';
 
     await wait(600); if(my!==token) return;
     sendBtn.classList.add('clicked');
