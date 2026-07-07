@@ -204,6 +204,31 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
 .why-banner-line .accent{ color:var(--blue); }
 .why-banner-mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; letter-spacing:.04em; color:var(--slate); margin:16px 0 0; }
 
+/* ---------- a note from the captain: the mission on parchment ---------- */
+.captain-note{
+  max-width:760px; margin:0 auto; padding:56px 56px 48px;
+  background:
+    repeating-linear-gradient(#0000 0 30px, var(--parchment-line) 30px 31px),
+    var(--parchment);
+  border:var(--px) solid var(--navy);
+  box-shadow:0 var(--px) 0 0 var(--navy), 10px 14px 0 0 rgba(8,40,80,.16);
+}
+.note-kicker{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px; font-weight:700; letter-spacing:.14em;
+  color:var(--label-ink); margin:0 0 22px;
+}
+.note-ink p{
+  font-family:"Iowan Old Style", Georgia, serif;
+  font-size:18.5px; line-height:31px; color:var(--ink);
+  margin:0 0 31px;
+}
+.note-ink .note-close{ font-weight:700; }
+.note-ink .note-sig{
+  margin:0; text-align:right; font-style:italic; color:var(--label-ink); font-size:16px;
+}
+@media (max-width:640px){ .captain-note{ padding:36px 24px 32px; } .note-ink p{ font-size:16.5px; line-height:29px; margin-bottom:29px; } }
+
 @media (max-width:860px){
   .compare{ flex-direction:column; }
   .compare-panel{ flex:none; }
@@ -336,7 +361,7 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
   <div class="hero-canvas-wrap"><canvas id="heroCanvas" class="pixel" aria-hidden="true"></canvas></div>
   <div class="hero-inner">
     <div class="hero-overlay reveal in-view">
-      <p class="kicker">A MAC APP WITH A CREW</p>
+      <p class="kicker">RECLAIM YOUR LIFE</p>
       <h1>The meeting ends. The work is already done.</h1>
       <p class="sub">Sailr listens on your Mac. The moment a task is said out loud, a Claude-powered crew is already on it: your calendar checked, the answer found, the Slack message drafted. Nothing sends until you nod.</p>
       <div class="hero-ctas">
@@ -421,6 +446,23 @@ canvas.pixel, .crew-ico, .how-ico{ image-rendering:pixelated; image-rendering:cr
   <p class="why-banner-line">Not notes.<span class="accent"> Done.</span></p>
   <p class="why-banner-mono">the whole pitch, honestly.</p>
 </div>
+
+<!-- ============================================================
+     A NOTE FROM THE CAPTAIN -- the mission, in ink
+     ============================================================ -->
+<section id="mission" class="section">
+  <div class="captain-note reveal">
+    <p class="note-kicker">&#9875; A NOTE FROM THE CAPTAIN</p>
+    <div class="note-ink">
+      <p>Everyone you know is using AI now. Your boss. Your friends. Your whole day runs through it. And somehow the lesson everybody took from it was: do more, do it faster, never stop.</p>
+      <p>We think that is backwards. AI should be doing the work so humans can go do what we love.</p>
+      <p>I love sailing. Out on the water there is no AI. There is wind, and it is enough. I love camping, and running, and laughing with my friends, and exploring the world, and figuring out my own life as I go. That is the point. That is what the time is for.</p>
+      <p>So Sailr sits in your meeting, catches the work, and does it, while you stay present with the actual humans in the room. Then it hands you your afternoon back.</p>
+      <p class="note-close">Reclaim your life. Go create. Go explore. Go learn. Go laugh. Go sail.</p>
+      <p class="note-sig">Jonathan &middot; captain, Sailr</p>
+    </div>
+  </div>
+</section>
 
 <!-- ============================================================
      HOW IT WORKS

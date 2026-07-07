@@ -100,6 +100,18 @@
 
   .accent-blue{ color:var(--blue); }
   .accent-green{ color:var(--green); }
+
+  /* v3 big-type words scale in per-word (paintTypeCard), which needs a box */
+  .kt-word{ display:inline-block; }
+
+  /* ---------- v3 beat 5: on-top-of-your-stuff desktop scene ---------- */
+  .doc-line{ height:18px; background:#d7dee7; }
+  .doc-cal-cell{ aspect-ratio:1; border:2px solid var(--border); background:#fff; }
+  .doc-cal-cell.hi{ background:var(--gold); border-color:var(--navy); }
+  .dcard{ display:flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--navy); padding:12px 14px; font-family:'Outfit'; font-weight:600; font-size:16px; color:var(--navy); }
+  .dcard-tick{ flex:none; width:24px; height:24px; border:2px solid var(--navy); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:800; }
+  .dcard-tick.read{ background:var(--green); }
+  .dcard-tick.send{ background:var(--blue); }
 </style>
 </head>
 <body>
@@ -127,27 +139,32 @@
       </div>
     </div>
 
-    <!-- ============ 2. LINE A 4.0-5.4 ============ -->
-    <div class="shot" id="s-line-a" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+    <!-- ============ 2. THE NOT LITANY 4.0-9.0 (v3) ============ -->
+    <div class="shot" id="s-not-1" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
       <div style="font-weight:700; font-size:96px; color:#fff; text-align:center; line-height:1.15;">
-        <span class="kt-word" data-i="0">Notes</span>
-        <span class="kt-word" data-i="1">don&#8217;t</span>
-        <span class="kt-word accent-blue" data-i="2">send</span>
-        <span class="kt-word" data-i="3">emails.</span>
+        <span class="kt-word" data-i="0">Not</span>
+        <span class="kt-word" data-i="1">a</span>
+        <span class="kt-word accent-blue" data-i="2">notetaker.</span>
       </div>
     </div>
 
-    <!-- ============ 3. LINE B 5.5-7.0 ============ -->
-    <div class="shot" id="s-line-b" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+    <div class="shot" id="s-not-2" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
       <div style="font-weight:700; font-size:96px; color:#fff; text-align:center; line-height:1.15;">
-        <span class="kt-word" data-i="0">Notes</span>
-        <span class="kt-word" data-i="1">don&#8217;t</span>
-        <span class="kt-word accent-blue" data-i="2">book</span>
-        <span class="kt-word" data-i="3">calls.</span>
+        <span class="kt-word" data-i="0">Not</span>
+        <span class="kt-word" data-i="1">a</span>
+        <span class="kt-word accent-blue" data-i="2">chatbot.</span>
       </div>
     </div>
 
-    <!-- ============ 4. REVEAL STING 7.0-9.0 ============ -->
+    <div class="shot" id="s-not-3" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:96px; color:#fff; text-align:center; line-height:1.15;">
+        <span class="kt-word" data-i="0">Not</span>
+        <span class="kt-word" data-i="1">more</span>
+        <span class="kt-word accent-blue" data-i="2">homework.</span>
+      </div>
+    </div>
+
+    <!-- ============ 3. REVEAL STING 9.0-11.5 ============ -->
     <div class="shot" id="s-reveal">
       <canvas id="cv-reveal" class="pix" width="1920" height="1080"></canvas>
       <div id="reveal-panel" class="pwin" style="position:absolute; left:50%; top:50%; width:520px; padding:56px 40px; display:flex; align-items:center; justify-content:center; opacity:0;">
@@ -158,7 +175,7 @@
       </div>
     </div>
 
-    <!-- ============ 5. CAST OFF 9.0-14.0 ============ -->
+    <!-- ============ 4. CAST OFF 11.5-15.5 ============ -->
     <div class="shot" id="s-castoff">
       <canvas id="cv-castoff" class="pix" width="1920" height="1080"></canvas>
       <button id="sail-btn" class="btn-pixel" style="position:absolute; left:50%; bottom:150px; transform:translateX(-50%); font-size:34px; padding:26px 54px;">
@@ -175,7 +192,63 @@
       <div id="castoff-tag" class="monotag chip" style="position:absolute; left:90px; bottom:90px; opacity:0;">You hit Sail. It listens. On your Mac.</div>
     </div>
 
-    <!-- ============ 6. TASKS MID-SENTENCE 14.0-20.0 ============ -->
+    <!-- ============ 5. ON TOP OF YOUR STUFF 15.5-21.0 (v3, new) ============ -->
+    <div class="shot" id="s-desktop" style="background:
+        repeating-conic-gradient(var(--sky) 0% 25%, #e1ecfa 0% 50%) 0 0/6px 6px,
+        linear-gradient(180deg,#dfeafa 0%, var(--sky) 60%);">
+
+      <!-- the big work window: a generic pixel document, never a real branded app -->
+      <div class="pwin" style="position:absolute; left:130px; top:200px; width:1150px; height:680px; overflow:hidden;">
+        <div style="display:flex; align-items:center; gap:10px; padding:14px 20px; background:#e7e9ec; border-bottom:var(--px) solid var(--navy);">
+          <div style="width:14px;height:14px;background:#ff5f57;border:2px solid #97302a;"></div>
+          <div style="width:14px;height:14px;background:#febc2e;border:2px solid #9a7217;"></div>
+          <div style="width:14px;height:14px;background:#28c840;border:2px solid #17862a;"></div>
+        </div>
+        <div style="display:flex; gap:50px; padding:50px 60px;">
+          <div style="flex:1; display:flex; flex-direction:column; gap:22px;">
+            <div class="doc-line" style="width:42%; height:28px; background:var(--border);"></div>
+            <div class="doc-line" style="width:88%;"></div>
+            <div class="doc-line" style="width:72%;"></div>
+            <div class="doc-line" style="width:81%;"></div>
+            <div class="doc-line" style="width:58%;"></div>
+            <div class="doc-line" style="width:76%;"></div>
+          </div>
+          <div style="width:230px; flex:none;">
+            <div class="kicker" style="margin-bottom:14px;">Calendar</div>
+            <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:6px;">
+              <div class="doc-cal-cell"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell hi"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell"></div>
+              <div class="doc-cal-cell"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell"></div>
+              <div class="doc-cal-cell"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell"></div><div class="doc-cal-cell"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- the Sailr column: the app's real slim shape, docked out of the way -->
+      <div id="dk-col" class="pwin" style="position:absolute; right:50px; top:230px; width:330px; height:560px; overflow:hidden; display:flex; flex-direction:column;">
+        <div style="flex:none; height:54px; display:flex; align-items:center; justify-content:center; background:#fff; border-bottom:var(--px) solid var(--navy);">
+          <svg viewBox="0 0 102 58" style="width:92px; height:auto; display:block;">
+            <path fill="#082850" d="M13.11 46.506C10.3807 46.506 8.004 46.092 5.98 45.264C3.98667 44.436 2.162 43.1327 0.506 41.354L5.704 36.11C6.83867 37.306 8.05 38.226 9.338 38.87C10.626 39.4833 12.0827 39.79 13.708 39.79C15.088 39.79 16.146 39.56 16.882 39.1C17.6487 38.6093 18.032 37.95 18.032 37.122C18.032 36.3553 17.756 35.7267 17.204 35.236C16.652 34.7147 15.916 34.27 14.996 33.902C14.1067 33.5033 13.11 33.1353 12.006 32.798C10.9327 32.43 9.844 32.0007 8.74 31.51C7.66667 30.9887 6.67 30.36 5.75 29.624C4.86067 28.888 4.14 27.968 3.588 26.864C3.036 25.76 2.76 24.3953 2.76 22.77C2.76 20.6847 3.25067 18.906 4.232 17.434C5.244 15.962 6.63933 14.8273 8.418 14.03C10.1967 13.2327 12.2667 12.834 14.628 12.834C16.9893 12.834 19.1667 13.2327 21.16 14.03C23.1533 14.8273 24.794 15.9313 26.082 17.342L20.838 22.54C19.8567 21.5587 18.86 20.8227 17.848 20.332C16.836 19.8413 15.732 19.596 14.536 19.596C13.4013 19.596 12.512 19.7953 11.868 20.194C11.224 20.5927 10.902 21.16 10.902 21.896C10.902 22.632 11.178 23.23 11.73 23.69C12.282 24.15 13.0027 24.564 13.892 24.932C14.812 25.2693 15.8087 25.622 16.882 25.99C17.986 26.358 19.0747 26.7873 20.148 27.278C21.2213 27.7687 22.2027 28.3973 23.092 29.164C24.012 29.9307 24.748 30.8967 25.3 32.062C25.852 33.2273 26.128 34.638 26.128 36.294C26.128 39.5447 24.978 42.0593 22.678 43.838C20.4087 45.6167 17.2193 46.506 13.11 46.506ZM39.0874 46.46C37.0021 46.46 35.1468 45.954 33.5214 44.942C31.8961 43.93 30.6234 42.55 29.7034 40.802C28.7834 39.0233 28.3234 37.0147 28.3234 34.776C28.3234 32.5067 28.7834 30.4827 29.7034 28.704C30.6234 26.9253 31.8961 25.5453 33.5214 24.564C35.1468 23.552 37.0021 23.046 39.0874 23.046C40.4981 23.046 41.7861 23.3067 42.9514 23.828C44.1168 24.3187 45.0674 25.024 45.8034 25.944C46.5701 26.864 47.0301 27.9067 47.1834 29.072V40.388C47.0301 41.584 46.5701 42.642 45.8034 43.562C45.0674 44.4513 44.1168 45.1567 42.9514 45.678C41.7861 46.1993 40.4981 46.46 39.0874 46.46ZM40.7894 39.33C42.1081 39.33 43.1661 38.9007 43.9634 38.042C44.7914 37.1833 45.2054 36.0793 45.2054 34.73C45.2054 33.8407 45.0214 33.0587 44.6534 32.384C44.2854 31.7093 43.7641 31.1727 43.0894 30.774C42.4454 30.3753 41.6941 30.176 40.8354 30.176C39.9768 30.176 39.2101 30.3753 38.5354 30.774C37.8914 31.1727 37.3701 31.7247 36.9714 32.43C36.6034 33.1047 36.4194 33.8713 36.4194 34.73C36.4194 35.6193 36.6034 36.4167 36.9714 37.122C37.3394 37.7967 37.8608 38.3333 38.5354 38.732C39.2101 39.1307 39.9614 39.33 40.7894 39.33ZM44.8834 46V39.974L46.0334 34.454L44.8834 29.026V23.506H52.7494V46H44.8834ZM57.4202 46V23.506H65.4242V46H57.4202ZM70.1331 46V12.466H78.1371V46H70.1331ZM82.846 46V23.506H90.85V46H82.846ZM90.85 33.764L87.262 30.728C88.1513 28.1827 89.332 26.266 90.804 24.978C92.276 23.69 94.1927 23.046 96.554 23.046C97.6273 23.046 98.5473 23.184 99.314 23.46C100.111 23.736 100.786 24.1653 101.338 24.748L96.692 30.958C96.4467 30.682 96.094 30.4673 95.634 30.314C95.2047 30.13 94.714 30.038 94.162 30.038C93.1193 30.038 92.3067 30.36 91.724 31.004C91.1413 31.6173 90.85 32.5373 90.85 33.764Z"/>
+            <path fill="#0061FF" d="M61.66 5.93201C67.939 8.34701 69.388 14.626 67.939 21.388H55.381L61.66 5.93201Z"/>
+          </svg>
+        </div>
+        <div style="flex:none; height:64px; position:relative;">
+          <div style="position:absolute; inset:0 0 auto 0; height:26px; background:var(--sky);"></div>
+          <div style="position:absolute; left:0; right:0; top:26px; height:20px; background:var(--water-mid);"></div>
+          <div style="position:absolute; left:0; right:0; top:46px; bottom:0; background:var(--water-dark);"></div>
+          <div style="position:absolute; right:14px; top:6px; width:12px; height:12px; background:var(--gold);"></div>
+        </div>
+        <div style="flex:1; background:#fff; padding:20px; display:flex; flex-direction:column; gap:14px;">
+          <div id="dk-card1" class="dcard"><span class="dcard-tick read">&#10003;</span>Read complete</div>
+          <div id="dk-card2" class="dcard"><span class="dcard-tick send">&#10003;</span>Draft ready</div>
+        </div>
+      </div>
+
+      <div id="dk-chip1" class="monotag chip" style="position:absolute; left:70px; bottom:90px; opacity:0;">It sits on top of your tools.</div>
+      <div id="dk-chip2" class="monotag chip" style="position:absolute; left:70px; bottom:90px; opacity:0;">Out of the way. Always on watch.</div>
+    </div>
+
+    <!-- ============ 6. TASKS MID-SENTENCE 21.0-26.5 (v3, retimed) ============ -->
     <div class="shot" id="s-tasks" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
       <div style="position:relative; width:1600px; height:260px; background:var(--parch-page); border:3px solid #b99a5e; box-shadow:0 18px 0 0 rgba(0,0,0,.25); padding:0 70px; display:flex; flex-direction:column; justify-content:center; gap:40px;">
         <div style="position:absolute; inset:0 70px; pointer-events:none; opacity:.55; background:repeating-linear-gradient(#0000 0 43.3px, var(--parch-line) 43.3px 46.3px);"></div>
@@ -191,7 +264,15 @@
       <div id="tk-caption" class="monotag" style="position:absolute; left:160px; bottom:110px; opacity:0;">It catches tasks as they are said.</div>
     </div>
 
-    <!-- ============ 7-16. CREW RHYTHM BUILD 20.0-34.0 ============ -->
+    <!-- ============ 7. CREW RHYTHM REBUILT 26.5-34.0 (v3) ============ -->
+    <div class="shot" id="s-crew-quote" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:96px; color:#fff; text-align:center; line-height:1.15;">
+        <span class="kt-word" data-i="0">Finds</span>
+        <span class="kt-word" data-i="1">the</span>
+        <span class="kt-word accent-blue" data-i="2">quote.</span>
+      </div>
+    </div>
+
     <div class="shot" id="s-card1" style="background:var(--navy);">
       <div id="c1-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
         <div class="acard-top">
@@ -201,50 +282,21 @@
         </div>
         <div class="acard-body"><div class="acard-line">$18,400 on the March order.</div></div>
       </div>
-      <div id="c1-tag" class="monotag" style="position:absolute;"><span class="accent-green">Found it.</span></div>
-    </div>
-
-    <div class="shot" id="s-card2" style="background:var(--navy);">
-      <div id="c2-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
-        <div class="acard-top">
-          <svg class="ico" viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="3" fill="#082850"/><rect x="7" y="12" width="2" height="3" fill="#082850"/><rect x="1" y="7" width="3" height="2" fill="#082850"/><rect x="12" y="7" width="3" height="2" fill="#082850"/><rect x="5" y="5" width="6" height="6" fill="#FFC400"/><rect x="7" y="7" width="2" height="2" fill="#082850"/><rect x="11.5" y="2.5" width="2" height="2" fill="#FFC400"/></svg>
-          <div class="sp">HubSpot read: Acme renewal</div>
-          <div class="tagpill read">Read &middot; Done</div>
-        </div>
-        <div class="acard-body"><div class="acard-line">Negotiation, $48,000, closes Aug 29.</div></div>
-      </div>
-      <div id="c2-tag" class="monotag" style="position:absolute;"><span class="accent-green">Checked.</span></div>
-    </div>
-
-    <div class="shot" id="s-card3" style="background:var(--navy);">
-      <div id="c3-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
-        <div class="acard-top">
-          <svg class="ico" viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" fill="#0061FF"/><rect x="1.5" y="3.5" width="13" height="2.2" fill="#fff"/><polygon points="1.5,3.5 8,8.5 14.5,3.5" fill="#CFE0FB"/></svg>
-          <div class="sp">Draft to Dana ready</div>
-          <div class="tagpill send">Draft &middot; Ready</div>
-        </div>
-        <div class="acard-dm">&#8220;Deck attached, recap inside. Invite for Thursday is held too.&#8221;</div>
-      </div>
-      <div id="c3-tag" class="monotag" style="position:absolute;"><span class="accent-blue">Drafted.</span></div>
-    </div>
-
-    <div class="shot" id="s-card4" style="background:var(--navy);">
-      <div id="c4-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
-        <div class="acard-top">
-          <svg class="ico" viewBox="0 0 16 16"><rect x="3" y="2" width="3.4" height="3.4" fill="#E4002B"/><rect x="9.6" y="3" width="3.4" height="3.4" fill="#00B368"/><rect x="8.6" y="9.6" width="3.4" height="3.4" fill="#0061FF"/><rect x="2" y="8.6" width="3.4" height="3.4" fill="#FFC400"/></svg>
-          <div class="sp">Slack Sam the timeline</div>
-          <div class="tagpill send">Send &middot; Needs a nod</div>
-        </div>
-        <div class="acard-dm"><span class="to">DM &rarr; Sam</span>&#8220;Sam, can you sanity-check the rollout timeline tomorrow AM?&#8221;</div>
-      </div>
-      <div id="c4-tag" class="monotag" style="position:absolute;"><span class="accent-blue">Racked up.</span></div>
     </div>
 
     <div class="shot" id="s-breath1">
       <canvas id="cv-breath1" class="pix" width="1920" height="1080"></canvas>
     </div>
 
-    <div class="shot" id="s-chart1" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:40px;">
+    <div class="shot" id="s-crew-slack" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:96px; color:#fff; text-align:center; line-height:1.15;">
+        <span class="kt-word" data-i="0">Drafts</span>
+        <span class="kt-word" data-i="1">the</span>
+        <span class="kt-word accent-blue" data-i="2">Slack.</span>
+      </div>
+    </div>
+
+    <div class="shot" id="s-crew-chart" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:40px;">
       <div class="kicker" style="color:var(--gold);">THE CHART</div>
       <div style="background:var(--parch-page); border:3px solid #b99a5e; padding:38px 60px; display:flex; align-items:center; justify-content:center;">
         <div class="buoyrow" id="chart-buoys">
@@ -254,59 +306,9 @@
           <div class="buoy" data-n="4">4</div>
         </div>
       </div>
-      <div class="monotag">The chart keeps the voyage.</div>
     </div>
 
-    <div class="shot" id="s-logbook" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:44px;">
-      <div id="lb-wrap" style="position:relative; width:820px; height:340px;">
-        <div style="position:absolute; inset:0; display:flex; background:#0e2c54; border:var(--px) solid var(--navy); box-shadow:0 var(--px) 0 0 var(--hull-dark); perspective:1400px;">
-          <div style="position:relative; flex:1; margin:14px 2px 14px 14px; background:var(--parch-page); border:3px solid #cdb482; padding:20px 24px; overflow:hidden;">
-            <div style="position:absolute; inset:16px 20px; pointer-events:none; opacity:.6; background:repeating-linear-gradient(#0000 0 30px, #d8c290 30px 32px);"></div>
-            <div class="serif" style="position:relative; font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#8a6f3a; font-weight:700; margin-bottom:8px;">&#9875; Captain&#8217;s Log</div>
-            <div class="serif" style="position:relative; font-size:19px; line-height:30px; color:#1c3a63;">Calendar read: Thu open.<br>Acme quote: $18,400.<br>Slack drafted for Sam.</div>
-          </div>
-          <div style="position:absolute; left:50%; top:0; bottom:0; width:6px; transform:translateX(-50%); z-index:4; background:repeating-linear-gradient(180deg,var(--navy) 0 3px,#12386a 3px 6px);"></div>
-          <div style="position:relative; flex:1; margin:14px 14px 14px 2px; background:var(--parch-page); border:3px solid #cdb482; padding:20px 24px; overflow:hidden;">
-            <div style="position:absolute; inset:16px 20px; pointer-events:none; opacity:.6; background:repeating-linear-gradient(#0000 0 30px, #d8c290 30px 32px);"></div>
-            <div class="serif" style="position:relative; font-size:19px; line-height:30px; color:#1c3a63;">Dana&#8217;s deck sent.<br>Event held, Thu 2:00.<br>Fall term starts Aug 12.</div>
-          </div>
-          <div id="lb-flip" style="position:absolute; top:14px; bottom:14px; left:50%; width:calc(50% - 16px); background:var(--parch-page); border:3px solid #cdb482; z-index:5; transform-origin:left center; backface-visibility:hidden; box-shadow:0 0 20px rgba(0,0,0,.35); padding:20px 24px; overflow:hidden;">
-            <div class="serif" style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#8a6f3a; font-weight:700; margin-bottom:8px;">&#9875; Captain&#8217;s Log</div>
-            <div class="serif" style="font-size:19px; line-height:30px; color:#1c3a63;">Calendar read: Thu open.<br>Acme quote: $18,400.<br>Slack drafted for Sam.</div>
-          </div>
-        </div>
-      </div>
-      <div class="monotag">The log writes itself.</div>
-    </div>
-
-    <div class="shot" id="s-card5" style="background:var(--navy);">
-      <div id="c5-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
-        <div class="acard-top">
-          <svg class="ico" viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="10" fill="#00B368"/><rect x="2" y="4" width="12" height="3" fill="#082850"/><rect x="4.5" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="10" y="1.5" width="1.5" height="3" fill="#082850"/><rect x="4" y="8.5" width="2" height="2" fill="#fff"/><rect x="7" y="8.5" width="2" height="2" fill="#fff"/><rect x="10" y="8.5" width="2" height="2" fill="#fff"/></svg>
-          <div class="sp">Calendar: Thursday 2:00 held</div>
-          <div class="tagpill send">Waits for your nod</div>
-        </div>
-        <div class="acard-body"><div class="acard-line">30 minutes with Dana: Rollout sync.</div></div>
-      </div>
-    </div>
-
-    <div class="shot" id="s-card6" style="background:var(--navy);">
-      <div id="c6-card" class="acard" style="position:absolute; left:50%; top:50%; width:900px;">
-        <div class="acard-top">
-          <svg class="ico" viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="8" fill="#0061FF"/><rect x="10" y="4" width="1" height="8" fill="#CFE0FB"/><rect x="3" y="6" width="5" height="1.2" fill="#fff"/><rect x="3" y="8.5" width="4" height="1.2" fill="#fff"/><rect x="11.8" y="6.5" width="1.6" height="3" fill="#fff"/></svg>
-          <div class="sp">Ticket filed to the board</div>
-          <div class="tagpill send">Waits for your nod</div>
-        </div>
-        <div class="acard-body"><div class="acard-line">Bug: CSV export drops row one. Repro attached.</div></div>
-      </div>
-      <div id="c6-tag" class="monotag" style="position:absolute;"><span class="accent-blue">Written.</span></div>
-    </div>
-
-    <div class="shot" id="s-breath2">
-      <canvas id="cv-breath2" class="pix" width="1920" height="1080"></canvas>
-    </div>
-
-    <!-- ============ 17. THE NOD 34.0-39.0 ============ -->
+    <!-- ============ 8. THE NOD 34.0-39.0 (unchanged) ============ -->
     <div class="shot" id="s-nod" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:50px;">
       <div id="nod-card" class="acard" style="width:980px;">
         <div class="acard-top">
@@ -327,83 +329,56 @@
       </svg>
     </div>
 
-    <!-- ============ 18-23. PAYOFF BURST 39.0-46.0 ============ -->
-    <div class="shot" id="s-pay1" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
-      <div id="pay1-pill" class="tagpill done" style="font-size:44px; padding:22px 44px;">Sent, verified.</div>
-      <div class="monotag" style="position:absolute; left:90px; bottom:110px;"><span class="accent-green">Sent.</span></div>
+    <!-- ============ 9. PAYOFF BURST REBUILT 39.0-45.5 (v3): one giant word per cut ============ -->
+    <div class="shot" id="s-word-sent" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:140px; color:var(--blue); text-align:center;"><span class="kt-word" data-i="0">Sent.</span></div>
     </div>
 
-    <div class="shot" id="s-pay2" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;">
-      <div style="display:grid; grid-template-columns:repeat(7,90px); gap:8px;">
-        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">MON</div>
-        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">TUE</div>
-        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">WED</div>
-        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--gold); font-weight:700;">THU</div>
-        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">FRI</div>
-        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">SAT</div>
-        <div class="mono" style="text-align:center; font-size:16px; letter-spacing:.1em; color:var(--slate); font-weight:700;">SUN</div>
-      </div>
-      <div id="pay2-grid" style="display:grid; grid-template-columns:repeat(7,90px); gap:8px;"></div>
-      <div class="monotag" style="position:relative; margin-top:14px;"><span class="accent-green">Booked.</span></div>
+    <div class="shot" id="s-word-booked" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:140px; color:#fff; text-align:center;"><span class="kt-word" data-i="0">Booked.</span></div>
     </div>
 
-    <div class="shot" id="s-pay3" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center;">
-      <div class="kicker" style="margin-bottom:26px; width:760px; text-align:left;">TIDY UP</div>
-      <div id="pay3-lines" style="display:flex; flex-direction:column; gap:16px; font-size:32px; font-weight:600; color:#fff; width:760px;">
-        <div class="p3l" style="opacity:0;">Recap ready.</div>
-        <div class="p3l" style="opacity:0;">3 tasks done.</div>
-        <div class="p3l" style="opacity:0;">Dana notified.</div>
-        <div class="p3l" style="opacity:0;">HubSpot note logged.</div>
-      </div>
-      <div class="monotag" style="position:absolute; left:90px; bottom:110px;"><span class="accent-green">Logged.</span></div>
+    <div class="shot" id="s-word-logged" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:140px; color:var(--blue); text-align:center;"><span class="kt-word" data-i="0">Logged.</span></div>
     </div>
 
-    <div class="shot" id="s-pay4" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:34px;">
-      <div class="kicker" style="color:var(--gold);">THE CHART</div>
-      <div style="background:var(--parch-page); border:3px solid #b99a5e; padding:34px 54px;">
-        <div class="buoyrow">
-          <div class="buoy done">1</div>
-          <div class="buoy done">2</div>
-          <div class="buoy done">3</div>
-          <div class="buoy done">4</div>
-        </div>
-      </div>
-      <div class="monotag" style="position:absolute; left:90px; bottom:110px;"><span class="accent-green">Filed.</span></div>
+    <div class="shot" id="s-word-filed" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:140px; color:#fff; text-align:center;"><span class="kt-word" data-i="0">Filed.</span></div>
+    </div>
+
+    <div class="shot" id="s-word-done" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:140px; color:var(--blue); text-align:center;"><span class="kt-word" data-i="0">Done.</span></div>
     </div>
 
     <div class="shot" id="s-pay5">
       <canvas id="cv-pay5" class="pix" width="1920" height="1080"></canvas>
     </div>
 
-    <div class="shot" id="s-pay6" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
-      <div id="pay6-stack" style="position:relative; width:760px; height:420px;">
-        <div class="p6card acard" style="position:absolute; left:0; top:0; width:760px; padding:0;">
-          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Calendar checked</div><div class="tagpill read">Read &middot; Done</div></div>
-        </div>
-        <div class="p6card acard" style="position:absolute; left:30px; top:80px; width:760px; padding:0;">
-          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Acme quote pulled</div><div class="tagpill read">Read &middot; Done</div></div>
-        </div>
-        <div class="p6card acard" style="position:absolute; left:60px; top:160px; width:760px; padding:0;">
-          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Fall term dates found</div><div class="tagpill read">Read &middot; Done</div></div>
-        </div>
-        <div class="p6card acard" style="position:absolute; left:90px; top:240px; width:760px; padding:0;">
-          <div class="acard-top" style="border-bottom:none; padding:22px 28px;"><div class="sp">Timeline sanity-checked</div><div class="tagpill read">Read &middot; Done</div></div>
-        </div>
-      </div>
-      <div class="monotag" style="position:absolute; left:90px; bottom:110px;"><span class="accent-green">Done.</span></div>
-    </div>
-
-    <!-- ============ 24. QUIET BEAT 46.0-49.0 ============ -->
+    <!-- ============ 10. QUIET BEAT 45.5-48.5 (retimed) ============ -->
     <div class="shot" id="s-quiet">
       <canvas id="cv-quiet" class="pix" width="1920" height="1080"></canvas>
     </div>
 
-    <!-- ============ 25. TAGLINE 49.0-53.0 ============ -->
+    <!-- ============ 11. TAGLINE 48.5-53.0 (retimed) ============ -->
     <div class="shot" id="s-tagline" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
-      <div id="tagline-text" style="font-weight:700; font-size:120px; color:#fff; opacity:0;">Not notes. <span style="color:#00B368;">Done.</span></div>
+      <div id="tagline-text" style="font-weight:700; font-size:120px; color:#fff; opacity:0;">Not notes. <span style="color:#0061FF;">Done.</span></div>
     </div>
 
-    <!-- ============ 26. END CARD 53.0-60.0 ============ -->
+    <!-- ============ 13. MISSION A 53.0-56.6: the boat, and why ============ -->
+    <div class="shot" id="s-mission-a">
+      <canvas id="cv-mission" class="pix" width="1920" height="1080"></canvas>
+      <div id="mission-line1" style="position:absolute; left:0; right:0; top:150px; text-align:center; font-weight:700; font-size:64px; color:var(--navy); opacity:0;">AI should do the work.</div>
+      <div id="mission-line2" style="position:absolute; left:0; right:0; top:245px; text-align:center; font-weight:700; font-size:64px; color:var(--navy); opacity:0;">So you can do what you love.</div>
+    </div>
+
+    <!-- ============ 14. MISSION B 56.6-60.0: the invitation ============ -->
+    <div class="shot" id="s-mission-b" style="background:var(--navy); display:flex; align-items:center; justify-content:center;">
+      <div style="font-weight:700; font-size:88px; color:#fff; text-align:center; line-height:1.2;">
+        <span class="kt-word">Create.</span> <span class="kt-word">Explore.</span> <span class="kt-word">Learn.</span> <span class="kt-word">Laugh.</span> <span class="kt-word" style="color:var(--blue);">Sail.</span>
+      </div>
+    </div>
+
+    <!-- ============ 15. END CARD 60.0-66.0 ============ -->
     <div class="shot" id="s-endcard" style="background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center;">
       <div id="end-panel" class="pwin" style="width:300px; padding:40px 30px; opacity:0;">
         <svg viewBox="0 0 102 58" style="width:100%; height:auto; display:block;">
@@ -411,8 +386,8 @@
           <path fill="#0061FF" d="M61.66 5.93201C67.939 8.34701 69.388 14.626 67.939 21.388H55.381L61.66 5.93201Z"/>
         </svg>
       </div>
-      <div id="end-subtitle" style="margin-top:36px; font-weight:500; font-size:30px; color:var(--sky); opacity:0;">The crew that works while you talk.</div>
-      <div id="end-github" class="mono" style="margin-top:22px; font-size:20px; color:var(--slate); opacity:0;">github.com/jii-win/sailr</div>
+      <div id="end-subtitle" style="margin-top:36px; font-weight:500; font-size:30px; color:var(--sky); opacity:0;">Reclaim your life.</div>
+      <div id="end-github" class="mono" style="margin-top:22px; font-size:20px; color:var(--slate); opacity:0;">getsailr.com</div>
     </div>
 
     <div id="fadeOverlay"></div>
@@ -422,7 +397,7 @@
 <script>
 (function(){
   'use strict';
-  var DURATION = 60.0;
+  var DURATION = 66.0;
   var stage = document.getElementById('stage');
   var fadeOverlay = document.getElementById('fadeOverlay');
 
@@ -476,11 +451,36 @@
     dur = dur || 0.24;
     el.style.opacity = easeOutExpo(prog(localT, delay, dur));
   }
-  function wordShow(el, localT, delay){
-    var p = prog(localT, delay, 0.24);
-    var e = easeOutExpo(p);
-    el.style.opacity = e;
-    el.style.transform = 'translateY(' + lerp(14,0,e).toFixed(2) + 'px)';
+  // Recreates CSS steps(n) easing in JS: quantizes progress into n discrete
+  // jumps instead of a smooth curve. Used by the v3 desktop-scene column
+  // slide, which the founder spec calls out as a stepped (not eased) glide.
+  function steps(p, n){ return Math.floor(clamp(p,0,1)*n)/n; }
+
+  // Solves cubic-bezier(x1,y1,x2,y2) at input progress t (0-1) by bisecting on
+  // the curve's x-component, then reading back the eased y. A plain CSS
+  // transition can't be scrubbed to an arbitrary T for ?t=/__seek, so the v3
+  // type-card easing has to be evaluated by hand on every rendered frame.
+  function cubicBezier(x1,y1,x2,y2,t){
+    function bx(u){ var v=1-u; return 3*v*v*u*x1 + 3*v*u*u*x2 + u*u*u; }
+    function by(u){ var v=1-u; return 3*v*v*u*y1 + 3*v*u*u*y2 + u*u*u; }
+    var lo=0, hi=1, u=t;
+    for(var i=0;i<24;i++){ u=(lo+hi)/2; if(bx(u)<t) lo=u; else hi=u; }
+    return by(u);
+  }
+  function typeEase(t){ return cubicBezier(0.16,1,0.3,1, clamp(t,0,1)); }
+
+  // Shared entrance for every v3 "big type" cut (the NOT litany, "Finds the
+  // quote.", "Drafts the Slack.", the payoff words): opacity 0->1 + scale
+  // 0.92->1.0 over 240ms on cubic-bezier(0.16,1,0.3,1), 70ms stagger per word.
+  // Exits are always hard cuts, which render() already gives for free by
+  // forcing a shot's opacity to 0 the instant T leaves [t0,t1).
+  function paintTypeCard(root, lt){
+    var words = root.querySelectorAll('.kt-word');
+    words.forEach(function(w, i){
+      var e = typeEase(prog(lt, i*0.07, 0.24));
+      w.style.opacity = e;
+      w.style.transform = 'scale(' + lerp(0.92,1,e).toFixed(4) + ')';
+    });
   }
   // Maps an element's live getBoundingClientRect() into the stage's own 1920x1080
   // coordinate space, undoing the CSS scale-to-fit transform on #stage. Used
@@ -725,13 +725,12 @@
   var el = {};
   ['co-window','co-clock','co-kicker','co-b1','co-b2','co-b3',
    'cv-reveal','reveal-panel','cv-castoff','sail-btn','co-cursor1','castoff-tag',
+   'dk-col','dk-card1','dk-card2','dk-chip1','dk-chip2',
    'tk-line1','tk-line2','tk-flag1','tk-flag2','tk-caption',
-   'c1-card','c2-card','c3-card','c4-card','c5-card','c6-card',
-   'c1-tag','c2-tag','c3-tag','c4-tag','c6-tag',
-   'cv-breath1','chart-buoys','lb-flip',
-   'cv-breath2','nod-card','nod-tag','nod-btn','nod-cursor','nod-sparkle',
-   'pay1-pill','pay2-grid','pay3-lines','cv-pay5','pay6-stack',
-   'cv-quiet','tagline-text','end-panel','end-subtitle','end-github'
+   'c1-card','cv-breath1','chart-buoys',
+   'nod-card','nod-tag','nod-btn','nod-cursor','nod-sparkle',
+   'cv-pay5','cv-quiet','tagline-text','end-panel','end-subtitle','end-github',
+   'cv-mission','mission-line1','mission-line2'
   ].forEach(function(id){ el[id] = document.getElementById(id); });
 
   var COLD_BULLETS = [
@@ -766,11 +765,6 @@
     }
   }
 
-  function paintKineticLine(root, words, accentIdx, lt){
-    var spans = root.querySelectorAll('.kt-word');
-    spans.forEach(function(s, i){ wordShow(s, lt, i*0.07); });
-  }
-
   function paintReveal(root, lt, T){
     // boat sits in the left third of the grid so it reads beside the wordmark panel,
     // not moored directly behind it with the mast poking over the top
@@ -780,27 +774,45 @@
   }
 
   function paintCastoff(root, lt, T){
-    var raise = clamp((lt-1.0)/0.9,0,1);
+    // shot is 4.0s (was 5.0s pre-v3); click/hoist/caption deltas below land the
+    // click ~12.0 and the chip caption ~13.5 per the founder's retimed spec
+    var raise = clamp((lt-0.5)/0.9,0,1);
     var heel = raise*0.65;
     var wind = raise>0.55;
     paintHarbor(el['cv-castoff'], { tt:T, sunX:44, sunY:24, cloudX:170, cloudY:20, cloud2X:214, cloud2Y:40,
       lighthouse:true, lighthouseX:216, boatX:120, heel:heel, sailRaise:raise, wind:wind, spray: raise>0.7 });
 
     var btn = el['sail-btn'];
-    var pressed = lt>=0.4 && lt<0.55;
+    var pressed = lt>=0.5 && lt<0.65;
     btn.classList.toggle('pressed', pressed);
-    btn.style.opacity = 1 - easeOutExpo(prog(lt, 1.0, 0.5));
+    btn.style.opacity = 1 - easeOutExpo(prog(lt, 0.65, 0.5));
 
     var cur = el['co-cursor1'];
-    var cs = prog(lt, 0.0, 0.4);
+    var cs = prog(lt, 0.0, 0.5);
     var startX = 1920*0.72, startY = 1080*0.86;
     var btnRect = {x:1920/2 - 6, y:1080-150-40};
     var cx = lerp(startX, btnRect.x, easeOutExpo(cs));
     var cy = lerp(startY, btnRect.y, easeOutExpo(cs));
     cur.style.left = cx+'px'; cur.style.top = cy+'px';
-    cur.style.opacity = lt<0.05?0:(lt>0.75?Math.max(0,1-(lt-0.75)/0.3):1);
+    cur.style.opacity = lt<0.05?0:(lt>0.7?Math.max(0,1-(lt-0.7)/0.3):1);
 
-    fadeIn(el['castoff-tag'], lt, 2.5, 0.3);
+    fadeIn(el['castoff-tag'], lt, 2.0, 0.3);
+  }
+
+  function paintDesktop(root, lt, T){
+    // column slides in from off-stage right on a stepped (not smooth) glide,
+    // matching the pixel-chrome aesthetic instead of a slick easing curve
+    var slideP = steps(prog(lt, 0.7, 0.5), 6);
+    el['dk-col'].style.transform = 'translateX(' + lerp(420, 0, slideP).toFixed(1) + 'px)';
+
+    enterPlain(el['dk-card1'], lt, 1.5, 0.24);
+    enterPlain(el['dk-card2'], lt, 2.9, 0.24);
+
+    // the two chip captions hand off to each other instead of overlapping
+    var chip1In = easeOutExpo(prog(lt, 0.9, 0.3));
+    var chip1Out = 1 - easeOutExpo(prog(lt, 2.9, 0.3));
+    el['dk-chip1'].style.opacity = clamp(chip1In * chip1Out, 0, 1);
+    el['dk-chip2'].style.opacity = easeOutExpo(prog(lt, 3.3, 0.3));
   }
 
   function typeText(node, full, lt, start, cps){
@@ -812,35 +824,23 @@
   }
 
   function paintTasks(root, lt, T){
+    // shot is 5.5s (was 6.0s pre-v3); deltas below keep each TASK flag's
+    // required 1.2s+ hold before the hard cut out of this beat
     typeText(el['tk-line1'], '"...can you check what we quoted Acme last time?"', lt, 0.1, 42);
-    fadeIn(el['tk-flag1'], lt, 2.2, 0.24);
-    typeText(el['tk-line2'], '"...Slack Sam the timeline."', lt, 3.2, 42);
-    fadeIn(el['tk-flag2'], lt, 5.0, 0.24);
-    fadeIn(el['tk-caption'], lt, 2.3, 0.3);
+    fadeIn(el['tk-flag1'], lt, 1.6, 0.24);
+    typeText(el['tk-line2'], '"...Slack Sam the timeline."', lt, 2.6, 42);
+    fadeIn(el['tk-flag2'], lt, 3.9, 0.24);
+    fadeIn(el['tk-caption'], lt, 1.8, 0.3);
   }
 
   function paintCard(cardEl, lt){
     enter(cardEl, lt, 0, 0.24);
-  }
-  // Docks a card's one-word mono tag 24px below the card's own left edge,
-  // measured live off the card's rendered box, instead of a fixed stage
-  // corner that left it stranded far from whichever card was on screen.
-  function paintCardWithTag(cardEl, tagEl, lt){
-    enter(cardEl, lt, 0, 0.24);
-    var r = stageLocalRect(cardEl);
-    tagEl.style.left = r.left + 'px';
-    tagEl.style.top = (r.bottom + 24) + 'px';
-    tagEl.style.opacity = cardEl.style.opacity;
   }
 
   function paintBreath1(root, lt, T){
     var x = lerp(-30, 270, lt/1.4);
     paintHarbor(el['cv-breath1'], { tt:T, sunX:44, sunY:24, cloudX:60, cloudY:18, cloud2X:200, cloud2Y:34,
       boatX:x, heel:0.6, sailRaise:1, wind:true, spray:true, bobAmp:1.2 });
-  }
-  function paintBreath2(root, lt, T){
-    paintHarbor(el['cv-breath2'], { tt:T, sunX:60, sunY:22, cloudX:170, cloudY:18, cloud2X:40, cloud2Y:32,
-      boatX:150, heel:0.55, sailRaise:1, wind:true, spray:true });
   }
 
   function paintChartBuoys(container, lt, states){
@@ -851,20 +851,13 @@
       b.classList.toggle('done', st==='done');
     });
   }
-  function paintChart1(root, lt){
+  // The v3 crew-rhythm chart cut: all four buoys light up gold in quick
+  // sequence and hold there (unlike the old chart beat, this one never
+  // advances to the green "done" state within its 1.1s).
+  function paintChartFinal(root, lt){
     paintChartBuoys(el['chart-buoys'], lt, function(i, lt){
-      var onAt = i*0.4;
-      var offAt = onAt+0.4;
-      if(lt < onAt) return 'pending';
-      if(lt < offAt) return 'active';
-      return 'done';
+      return lt >= i*0.2 ? 'active' : 'pending';
     });
-  }
-
-  function paintLogbook(root, lt){
-    var p = clamp(lt/0.8, 0, 1);
-    var steps = Math.floor(p*8)/8;
-    el['lb-flip'].style.transform = 'rotateY(' + (-170*steps) + 'deg)';
   }
 
   // .cursor is a 40x52 box (viewBox 0 0 12 16) whose hotspot/tip sits at
@@ -904,43 +897,9 @@
     } else { sparkle.innerHTML=''; }
   }
 
-  function paintPay2(root, lt){
-    var grid = el['pay2-grid'];
-    if(!grid._built){
-      for(var i=0;i<7;i++){
-        var cell = document.createElement('div');
-        cell.style.cssText='width:90px;height:90px;border:3px solid #3a567f;background:rgba(255,255,255,.06);position:relative;';
-        if(i===3){ cell.id='pay2-target'; }
-        grid.appendChild(cell);
-      }
-      grid._built = true;
-    }
-    var target = document.getElementById('pay2-target');
-    var p = prog(lt, 0.05, 0.3);
-    var e = easeOutBack(p);
-    if(!target.querySelector('.blk')){
-      var blk = document.createElement('div');
-      blk.className='blk';
-      blk.style.cssText='position:absolute;inset:6px;background:#00B368;';
-      target.appendChild(blk);
-    }
-    target.querySelector('.blk').style.opacity = clamp(p*2,0,1);
-    target.querySelector('.blk').style.transform = 'scale(' + Math.max(0,e).toFixed(3) + ')';
-  }
-
-  function paintPay3(root, lt){
-    var lines = root.querySelectorAll('.p3l');
-    lines.forEach(function(ln, i){ fadeIn(ln, lt, i*0.15, 0.2); });
-  }
-
   function paintPay5(root, lt, T){
     paintHarbor(el['cv-pay5'], { tt:T, sunX:44, sunY:24, cloudX:150, cloudY:18, cloud2X:40, cloud2Y:32,
       boatX:120, heel:0.6, sailRaise:1, wind:true, spray:true });
-  }
-
-  function paintPay6(root, lt){
-    var cards = root.querySelectorAll('.p6card');
-    cards.forEach(function(c, i){ enterPlain(c, lt, i*0.09, 0.2); c.style.transform = 'scale(' + (0.92+0.08*easeOutExpo(prog(lt,i*0.09,0.2))) + ')'; });
   }
 
   function paintQuiet(root, lt, T){
@@ -955,6 +914,23 @@
     el['tagline-text'].style.transform = 'scale(' + Math.max(0,e).toFixed(4) + ')';
   }
 
+  function paintMissionA(root, lt, T){
+    paintHarbor(el['cv-mission'], { tt:T, sunX:170, sunY:16, cloudX:60, cloudY:14, cloud2X:200, cloud2Y:26,
+      boatX:96 + lt*9, heel:0.5, sailRaise:1, wind:true });
+    fadeIn(el['mission-line1'], lt, 0.4, 0.35);
+    fadeIn(el['mission-line2'], lt, 1.9, 0.35);
+  }
+
+  // the invitation builds slowly, one word savored at a time
+  function paintMissionB(root, lt){
+    var words = root.querySelectorAll('.kt-word');
+    words.forEach(function(w, i){
+      var e = typeEase(prog(lt, 0.15 + i*0.5, 0.3));
+      w.style.opacity = e;
+      w.style.transform = 'scale(' + lerp(0.92,1,e).toFixed(4) + ')';
+    });
+  }
+
   function paintEndcard(root, lt){
     // end-panel is a normal-flow flex child (centered by #s-endcard's
     // align-items:center), not an absolutely-positioned left:50%/top:50% box,
@@ -967,32 +943,39 @@
 
   /* ---------------- shot registry ---------------- */
   var SHOTS = [
-    {id:'s-cold-open', t0:0.0,  t1:4.0,  paint:paintColdOpen},
-    {id:'s-line-a',    t0:4.0,  t1:5.4,  paint:function(r,lt){ paintKineticLine(r,null,null,lt); }},
-    {id:'s-line-b',    t0:5.5,  t1:7.0,  paint:function(r,lt){ paintKineticLine(r,null,null,lt); }},
-    {id:'s-reveal',    t0:7.0,  t1:9.0,  paint:paintReveal},
-    {id:'s-castoff',   t0:9.0,  t1:14.0, paint:paintCastoff},
-    {id:'s-tasks',     t0:14.0, t1:20.0, paint:paintTasks},
-    {id:'s-card1',     t0:20.0, t1:21.6, paint:function(r,lt){ paintCardWithTag(el['c1-card'],el['c1-tag'],lt); }},
-    {id:'s-card2',     t0:21.6, t1:23.2, paint:function(r,lt){ paintCardWithTag(el['c2-card'],el['c2-tag'],lt); }},
-    {id:'s-card3',     t0:23.2, t1:24.8, paint:function(r,lt){ paintCardWithTag(el['c3-card'],el['c3-tag'],lt); }},
-    {id:'s-card4',     t0:24.8, t1:26.2, paint:function(r,lt){ paintCardWithTag(el['c4-card'],el['c4-tag'],lt); }},
-    {id:'s-breath1',   t0:26.2, t1:27.6, paint:paintBreath1},
-    {id:'s-chart1',    t0:27.6, t1:29.2, paint:paintChart1},
-    {id:'s-logbook',   t0:29.2, t1:30.8, paint:paintLogbook},
-    {id:'s-card5',     t0:30.8, t1:31.6, paint:function(r,lt){ paintCard(el['c5-card'],lt); }},
-    {id:'s-card6',     t0:31.6, t1:32.4, paint:function(r,lt){ paintCardWithTag(el['c6-card'],el['c6-tag'],lt); }},
-    {id:'s-breath2',   t0:32.4, t1:34.0, paint:paintBreath2},
-    {id:'s-nod',       t0:34.0, t1:39.0, paint:paintNod},
-    {id:'s-pay1',      t0:39.0,      t1:40.1667,   paint:function(r,lt){ enterPlain(el['pay1-pill'],lt,0,0.2); } },
-    {id:'s-pay2',      t0:40.1667,   t1:41.3333,   paint:paintPay2 },
-    {id:'s-pay3',      t0:41.3333,   t1:42.5,      paint:paintPay3 },
-    {id:'s-pay4',      t0:42.5,      t1:43.6667,   paint:function(){} },
-    {id:'s-pay5',      t0:43.6667,   t1:44.8333,   paint:paintPay5 },
-    {id:'s-pay6',      t0:44.8333,   t1:46.0,      paint:paintPay6 },
-    {id:'s-quiet',     t0:46.0, t1:49.0, fadeInDur:0.25, paint:paintQuiet},
-    {id:'s-tagline',   t0:49.0, t1:53.0, paint:paintTagline},
-    {id:'s-endcard',   t0:53.0, t1:60.0, paint:paintEndcard}
+    {id:'s-cold-open',  t0:0.0,  t1:4.0,  paint:paintColdOpen},
+
+    {id:'s-not-1',      t0:4.0,  t1:5.6,  paint:paintTypeCard},
+    {id:'s-not-2',      t0:5.6,  t1:7.2,  paint:paintTypeCard},
+    {id:'s-not-3',      t0:7.2,  t1:9.0,  paint:paintTypeCard},
+
+    {id:'s-reveal',     t0:9.0,  t1:11.5, paint:paintReveal},
+    {id:'s-castoff',    t0:11.5, t1:15.5, paint:paintCastoff},
+
+    {id:'s-desktop',    t0:15.5, t1:21.0, paint:paintDesktop},
+
+    {id:'s-tasks',      t0:21.0, t1:26.5, paint:paintTasks},
+
+    {id:'s-crew-quote', t0:26.5, t1:28.2, paint:paintTypeCard},
+    {id:'s-card1',      t0:28.2, t1:30.0, paint:function(r,lt){ paintCard(el['c1-card'],lt); }},
+    {id:'s-breath1',    t0:30.0, t1:31.2, paint:paintBreath1},
+    {id:'s-crew-slack', t0:31.2, t1:32.9, paint:paintTypeCard},
+    {id:'s-crew-chart', t0:32.9, t1:34.0, paint:paintChartFinal},
+
+    {id:'s-nod',        t0:34.0, t1:39.0, paint:paintNod},
+
+    {id:'s-word-sent',   t0:39.0, t1:39.9, paint:paintTypeCard},
+    {id:'s-word-booked', t0:39.9, t1:40.8, paint:paintTypeCard},
+    {id:'s-word-logged', t0:40.8, t1:41.7, paint:paintTypeCard},
+    {id:'s-word-filed',  t0:41.7, t1:42.6, paint:paintTypeCard},
+    {id:'s-word-done',   t0:42.6, t1:43.6, paint:paintTypeCard},
+    {id:'s-pay5',        t0:43.6, t1:45.5, paint:paintPay5},
+
+    {id:'s-quiet',      t0:45.5, t1:48.5, fadeInDur:0.25, paint:paintQuiet},
+    {id:'s-tagline',    t0:48.5, t1:53.0, paint:paintTagline},
+    {id:'s-mission-a',  t0:53.0, t1:56.6, fadeInDur:0.25, paint:paintMissionA},
+    {id:'s-mission-b',  t0:56.6, t1:60.0, paint:paintMissionB},
+    {id:'s-endcard',    t0:60.0, t1:66.0, paint:paintEndcard}
   ];
   var shotEls = SHOTS.map(function(s){ return document.getElementById(s.id); });
 
@@ -1010,7 +993,7 @@
         e2.style.opacity = 0;
       }
     }
-    fadeOverlay.style.opacity = T>=59.5 ? clamp((T-59.5)/0.5,0,1) : 0;
+    fadeOverlay.style.opacity = T>=65.5 ? clamp((T-65.5)/0.5,0,1) : 0;
   }
 
   /* ---------------- hooks ---------------- */
